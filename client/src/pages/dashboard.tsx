@@ -20,7 +20,7 @@ import { Link } from "wouter";
 export default function Dashboard() {
   const { user } = useAuth();
   
-  const { data: userCases, isLoading: casesLoading } = useQuery({
+  const { data: userCases = [], isLoading: casesLoading } = useQuery({
     queryKey: ["/api/v1/cases"],
   });
 
@@ -29,15 +29,15 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
-  // Mock data for points and achievements (would come from backend)
+  // Data for points and achievements
   const pointsData = {
-    totalPoints: userProfile?.points || 120,
+    totalPoints: userProfile?.points || user?.points || 120,
     availableRewards: 3,
     recentEarnings: 25,
     nextRewardAt: 200,
   };
 
-  const recentReports = userCases?.slice(0, 3) || [];
+  const recentReports = Array.isArray(userCases) ? userCases.slice(0, 3) : [];
 
   return (
     <div className="min-h-screen bg-gray-50/30">
@@ -100,7 +100,7 @@ export default function Dashboard() {
                   <FileText className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{userCases?.length || 0}</p>
+                  <p className="text-2xl font-bold">{Array.isArray(userCases) ? userCases.length : 0}</p>
                   <p className="text-sm text-gray-600">My Reports</p>
                 </div>
               </div>
@@ -115,7 +115,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">
-                    {userCases?.filter(c => c.status === 'resolved')?.length || 0}
+                    {Array.isArray(userCases) ? userCases.filter((c: any) => c.status === 'resolved').length : 0}
                   </p>
                   <p className="text-sm text-gray-600">Resolved</p>
                 </div>
@@ -131,7 +131,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">
-                    {userCases?.filter(c => c.status === 'pending')?.length || 0}
+                    {Array.isArray(userCases) ? userCases.filter((c: any) => c.status === 'pending').length : 0}
                   </p>
                   <p className="text-sm text-gray-600">Pending</p>
                 </div>

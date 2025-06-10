@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthLayout } from "@/components/layouts/auth-layout";
 import { AdminLayout } from "@/components/layouts/admin-layout";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { AuthProvider } from "@/context/AuthContext";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Login from "@/pages/login";
@@ -129,12 +130,14 @@ function Router() {
 
 function App() {
   return (
-    <SidebarProvider>
-      <QueryClientProvider client={queryClient}>
-        <Router />
-        <Toaster />
-      </QueryClientProvider>
-    </SidebarProvider>
+    <AuthProvider>
+      <SidebarProvider>
+        <QueryClientProvider client={queryClient}>
+          <Router />
+          <Toaster />
+        </QueryClientProvider>
+      </SidebarProvider>
+    </AuthProvider>
   );
 }
 
