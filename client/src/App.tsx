@@ -4,7 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthLayout } from "@/components/layouts/auth-layout";
-import { AdminLayout } from "@/components/layouts/admin-layout";
+import { AdminLayout } from "@/components/layouts/admin-layout-new";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/context/AuthContext";
 import NotFound from "@/pages/not-found";
@@ -20,6 +20,9 @@ import Settings from "@/pages/settings";
 import AdminLogin from "@/pages/admin-login";
 import EmployeeLogin from "@/pages/employee-login";
 import AdminDashboard from "@/pages/admin-dashboard";
+import AdminComplaints from "@/pages/admin-complaints";
+import AdminEmployees from "@/pages/admin-employees";
+import AdminMap from "@/pages/admin-map";
 import EmployeeDashboard from "@/pages/employee-dashboard";
 
 function Router() {
@@ -71,6 +74,30 @@ function Router() {
         <Route path="/admin/dashboard">
           <AdminLayout>
             <AdminDashboard />
+          </AdminLayout>
+        </Route>
+        
+        <Route path="/admin/complaints">
+          <AdminLayout>
+            <AdminComplaints />
+          </AdminLayout>
+        </Route>
+        
+        <Route path="/admin/employees">
+          <AdminLayout>
+            <AdminEmployees />
+          </AdminLayout>
+        </Route>
+        
+        <Route path="/admin/map">
+          <AdminLayout>
+            <AdminMap />
+          </AdminLayout>
+        </Route>
+        
+        <Route path="/admin/settings">
+          <AdminLayout>
+            <Settings />
           </AdminLayout>
         </Route>
 
