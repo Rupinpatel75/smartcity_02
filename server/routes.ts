@@ -278,6 +278,84 @@ export async function registerRoutes(app: express.Express): Promise<Server> {
     }
   });
 
+  // Admin routes - Get all users
+  app.get("/api/v1/admin/users", authenticateUser, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const users = await storage.getAllUsers();
+      // Remove passwords from response
+      const usersWithoutPasswords = users.map(({ password, ...user }) => user);
+      res.json(usersWithoutPasswords);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
+
+  // Admin routes - Delete user
+  app.delete("/api/v1/admin/users/:userId", authenticateUser, async (req: AuthRequest, res: Response) => {
+    try {
+      const adminUserId = req.user?.userId;
+      const targetUserId = parseInt(req.params.userId);
+
+      if (!adminUserId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const admin = await storage.getUser(adminUserId);
+      if (!admin || !admin.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const deleted = await storage.deleteUser(targetUserId);
+      if (!deleted) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
+
+  // Admin routes - Toggle admin status
+  app.patch("/api/v1/admin/users/:userId/toggle-admin", authenticateUser, async (req: AuthRequest, res: Response) => {
+    try {
+      const adminUserId = req.user?.userId;
+      const targetUserId = parseInt(req.params.userId);
+      const { isAdmin } = req.body;
+
+      if (!adminUserId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const admin = await storage.getUser(adminUserId);
+      if (!admin || !admin.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const updatedUser = await storage.updateUser(targetUserId, { isAdmin });
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({ message: "User role updated successfully", user: updatedUser });
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
+
   const { createServer } = await import("http");
   const server = createServer(app);
   return server;

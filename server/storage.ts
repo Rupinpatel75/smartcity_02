@@ -6,8 +6,10 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByMobile(mobile: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<User>): Promise<User | undefined>;
+  deleteUser(id: number): Promise<boolean>;
   createCase(case_: InsertCase): Promise<Case>;
   getCases(): Promise<Case[]>;
   getCaseById(id: number): Promise<Case | undefined>;
@@ -32,6 +34,16 @@ export class DatabaseStorage implements IStorage {
   async getUserByMobile(mobile: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.phoneNo, mobile));
     return user ? this.normalizeUser(user) : undefined;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    const allUsers = await db.select().from(users);
+    return allUsers.map(user => this.normalizeUser(user));
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    const result = await db.delete(users).where(eq(users.id, id));
+    return result.rowCount > 0;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {

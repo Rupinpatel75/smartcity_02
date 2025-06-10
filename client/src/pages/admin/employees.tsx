@@ -46,9 +46,8 @@ export default function ViewEmployees() {
 
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: number) => {
-      return apiRequest("/api/v1/admin/users", {
+      return apiRequest(`/api/v1/admin/users/${userId}`, {
         method: "DELETE",
-        body: { userId },
       });
     },
     onSuccess: () => {
@@ -69,9 +68,9 @@ export default function ViewEmployees() {
 
   const toggleAdminMutation = useMutation({
     mutationFn: async ({ userId, isAdmin }: { userId: number; isAdmin: boolean }) => {
-      return apiRequest("/api/v1/admin/users/toggle-admin", {
+      return apiRequest(`/api/v1/admin/users/${userId}/toggle-admin`, {
         method: "PATCH",
-        body: { userId, isAdmin },
+        body: JSON.stringify({ isAdmin }),
       });
     },
     onSuccess: () => {
@@ -114,14 +113,16 @@ export default function ViewEmployees() {
   
       <div className="p-6 space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-semibold">View Employee List</h1>
-          <Button variant="default">+ Add Employee</Button>
+          <h1 className="text-2xl font-semibold">User Management</h1>
+          <Link href="/admin/add-employee">
+            <Button variant="default">+ Add User</Button>
+          </Link>
         </div>
 
         <div className="flex gap-4 items-end">
           <div className="flex-1">
             <Input
-              placeholder="Search by keyword"
+              placeholder="Search by name, email or mobile number"
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
             />
@@ -133,17 +134,16 @@ export default function ViewEmployees() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="All Roles">All Roles</SelectItem>
-                <SelectItem value="Manager">Manager</SelectItem>
-                <SelectItem value="Employee">Employee</SelectItem>
+                <SelectItem value="Admin">Admin</SelectItem>
+                <SelectItem value="Citizen">Citizen</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={handleSearch}>Search</Button>
         </div>
 
         <div>
           <p className="text-sm text-muted-foreground mb-4">
-            Showing {employees.length} of {employees.length} Employees
+            Showing {filteredUsers.length} of {Array.isArray(users) ? users.length : 0} Users
           </p>
           
           <Table>
@@ -152,37 +152,59 @@ export default function ViewEmployees() {
                 <TableHead>ID</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Phone Number</TableHead>
+                <TableHead>Mobile Number</TableHead>
+                <TableHead>City</TableHead>
                 <TableHead>Role</TableHead>
-                <TableHead>Action</TableHead>
+                <TableHead>Points</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {employees.map((employee) => (
-                <TableRow key={employee.id}>
-                  <TableCell>{employee.id}</TableCell>
-                  <TableCell>{employee.name}</TableCell>
-                  <TableCell>{employee.email}</TableCell>
-                  <TableCell>{employee.phoneNumber}</TableCell>
-                  <TableCell>{employee.role}</TableCell>
-                  <TableCell className="space-x-2">
-                    <Button 
-                      variant="default" 
-                      size="sm"
-                      onClick={() => handleAssignTask(employee.id)}
-                    >
-                      Assign Task
-                    </Button>
-                    <Button 
-                      variant="destructive" 
-                      size="sm"
-                      onClick={() => handleDelete(employee.id)}
-                    >
-                      Delete
-                    </Button>
-                  </TableCell>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center">Loading...</TableCell>
                 </TableRow>
-              ))}
+              ) : filteredUsers.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center">No users found</TableCell>
+                </TableRow>
+              ) : (
+                filteredUsers.map((user: User) => (
+                  <TableRow key={user.id}>
+                    <TableCell>#{user.id}</TableCell>
+                    <TableCell>{user.username}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>{user.phoneNo}</TableCell>
+                    <TableCell>{user.city}</TableCell>
+                    <TableCell>
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        user.isAdmin ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {user.isAdmin ? 'Admin' : 'Citizen'}
+                      </span>
+                    </TableCell>
+                    <TableCell>{user.points || 0}</TableCell>
+                    <TableCell className="space-x-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleToggleAdmin(user.id, user.isAdmin)}
+                        disabled={toggleAdminMutation.isPending}
+                      >
+                        {user.isAdmin ? 'Remove Admin' : 'Make Admin'}
+                      </Button>
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={() => handleDelete(user.id)}
+                        disabled={deleteUserMutation.isPending}
+                      >
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
 
