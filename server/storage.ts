@@ -12,82 +12,55 @@ export interface IStorage {
   getCaseById(id: number): Promise<Case | undefined>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private cases: Map<number, Case>;
-  private currentUserId: number;
-  private currentCaseId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.cases = new Map();
-    this.currentUserId = 1;
-    this.currentCaseId = 1;
-  }
-
+export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.email === email,
-    );
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = { 
-      ...insertUser, 
-      id,
-      points: 0,
-      isAdmin: false
-    };
-    this.users.set(id, user);
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
     return user;
   }
 
   async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {
-    const user = this.users.get(id);
-    if (!user) return undefined;
-    
-    const updatedUser = { ...user, ...updates };
-    this.users.set(id, updatedUser);
-    return updatedUser;
+    const [user] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
   }
 
   async createCase(insertCase: InsertCase): Promise<Case> {
-    const id = this.currentCaseId++;
-    const case_: Case = { 
-      ...insertCase, 
-      id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      status: insertCase.status || 'pending',
-      imageUrl: insertCase.imageUrl || null
-    };
-    this.cases.set(id, case_);
+    const [case_] = await db
+      .insert(cases)
+      .values(insertCase)
+      .returning();
     return case_;
   }
 
   async getCases(): Promise<Case[]> {
-    return Array.from(this.cases.values());
+    return await db.select().from(cases);
   }
 
   async getCaseById(id: number): Promise<Case | undefined> {
-    return this.cases.get(id);
-  }
-
-  // Keep legacy method for compatibility
-  async getUserById(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [case_] = await db.select().from(cases).where(eq(cases.id, id));
+    return case_ || undefined;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
