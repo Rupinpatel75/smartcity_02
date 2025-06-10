@@ -6,63 +6,113 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar as CalendarIcon, Search } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Calendar as CalendarIcon, Search, MapPin, Clock, User, AlertTriangle, CheckCircle } from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
+import { Icon, DivIcon } from "leaflet";
+import { renderToStaticMarkup } from 'react-dom/server';
 
-const mockMarkers = [
-  { id: 1, lat: 23.2156, lng: 72.6369, title: "Pothole", status: "pending" },
-  { id: 2, lat: 23.2256, lng: 72.6469, title: "Street Light", status: "completed" },
-  { id: 3, lat: 23.2056, lng: 72.6269, title: "Garbage", status: "pending" },
-];
+// Create custom markers for different statuses
+const createMarkerIcon = (status: string) => {
+  const color = status === 'resolved' || status === 'completed' ? '#22c55e' : '#ef4444';
+  const symbol = status === 'resolved' || status === 'completed' ? '✓' : '!';
+  
+  const iconHtml = `
+    <div style="
+      background-color: ${color}; 
+      width: 25px; 
+      height: 35px; 
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      border: 3px solid white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      position: relative;
+    ">
+      <div style="
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(45deg);
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+      ">
+        ${symbol}
+      </div>
+    </div>
+  `;
+  
+  return new DivIcon({
+    html: iconHtml,
+    iconSize: [25, 35],
+    iconAnchor: [12, 35],
+    className: 'custom-marker'
+  });
+};
+
+interface CaseData {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  status: string;
+  priority: string;
+  location: string;
+  latitude: string;
+  longitude: string;
+  imageUrl?: string;
+  userId: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function Map() {
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const [status, setStatus] = useState<"pending" | "completed" | undefined>();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState<"pending" | "resolved" | undefined>();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const { data: markers = mockMarkers } = useQuery({
-    queryKey: ["/api/cases/map", { date, status }],
+  const { data: cases = [] } = useQuery({
+    queryKey: ["/api/v1/cases"],
+  });
+
+  // Filter cases based on search term and status
+  const filteredCases = (cases as CaseData[]).filter((case_: CaseData) => {
+    const matchesSearch = !searchTerm || 
+      case_.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      case_.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      case_.category.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = !selectedStatus || case_.status === selectedStatus;
+    
+    return matchesSearch && matchesStatus && case_.latitude && case_.longitude;
   });
 
   const filters = (
     <div className="flex flex-col md:flex-row gap-4">
       <div className="flex-1">
         <Input 
-          placeholder="Search location..." 
+          placeholder="Search location, title, or category..." 
           className="w-full"
-          prefix={<Search className="h-4 w-4" />}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" className="w-full md:w-auto">
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {date ? format(date, "PPP") : "Pick a date"}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0">
-          <Calendar
-            mode="single"
-            selected={date}
-            onSelect={setDate}
-            initialFocus
-          />
-        </PopoverContent>
-      </Popover>
       <Button 
-        variant={status === "pending" ? "default" : "outline"}
-        onClick={() => setStatus(s => s === "pending" ? undefined : "pending")}
+        variant={selectedStatus === "pending" ? "default" : "outline"}
+        onClick={() => setSelectedStatus(s => s === "pending" ? undefined : "pending")}
         className="w-full md:w-auto"
       >
-        Pending
+        <AlertTriangle className="mr-2 h-4 w-4" />
+        Pending ({(cases as CaseData[]).filter(c => c.status === "pending").length})
       </Button>
       <Button 
-        variant={status === "completed" ? "default" : "outline"}
-        onClick={() => setStatus(s => s === "completed" ? undefined : "completed")}
+        variant={selectedStatus === "resolved" ? "default" : "outline"}
+        onClick={() => setSelectedStatus(s => s === "resolved" ? undefined : "resolved")}
         className="w-full md:w-auto"
       >
-        Completed
+        <CheckCircle className="mr-2 h-4 w-4" />
+        Resolved ({(cases as CaseData[]).filter(c => c.status === "resolved").length})
       </Button>
     </div>
   );
@@ -94,25 +144,69 @@ export default function Map() {
         <CardContent className="p-0">
           <div className="h-[calc(100vh-16rem)] md:h-[calc(100vh-12rem)]">
             <MapContainer
-              center={[23.2156, 72.6369]}
-              zoom={13}
+              center={[23.0225, 72.5714]}
+              zoom={12}
               style={{ height: "100%", width: "100%" }}
             >
               <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               />
-              {markers.map((marker) => (
+              {filteredCases.map((case_: CaseData) => (
                 <Marker
-                  key={marker.id}
-                  position={[marker.lat, marker.lng]}
+                  key={case_.id}
+                  position={[parseFloat(case_.latitude), parseFloat(case_.longitude)]}
+                  icon={createMarkerIcon(case_.status)}
                 >
-                  <Popup>
-                    <div className="p-2">
-                      <h3 className="font-semibold">{marker.title}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Status: {marker.status}
-                      </p>
+                  <Popup maxWidth={300} minWidth={250}>
+                    <div className="p-3 space-y-3">
+                      <div className="flex items-start justify-between">
+                        <h3 className="font-semibold text-lg text-gray-900 leading-tight">
+                          {case_.title}
+                        </h3>
+                        <Badge 
+                          variant={case_.status === 'resolved' ? 'default' : 'destructive'}
+                          className="ml-2 shrink-0"
+                        >
+                          {case_.status === 'resolved' ? (
+                            <><CheckCircle className="w-3 h-3 mr-1" /> Resolved</>
+                          ) : (
+                            <><AlertTriangle className="w-3 h-3 mr-1" /> Pending</>
+                          )}
+                        </Badge>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <p className="text-sm text-gray-600 line-clamp-3">
+                          {case_.description}
+                        </p>
+                        
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <div className="flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            <span className="capitalize">{case_.category}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            <span>{new Date(case_.createdAt).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="text-xs text-gray-500">
+                          <div className="flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            <span className="truncate">{case_.location}</span>
+                          </div>
+                        </div>
+                        
+                        {case_.priority && (
+                          <div className="text-xs">
+                            <Badge variant="outline" className="text-xs">
+                              Priority: {case_.priority}
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </Popup>
                 </Marker>
