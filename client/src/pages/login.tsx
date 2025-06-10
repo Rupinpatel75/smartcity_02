@@ -6,15 +6,31 @@ import { SiGoogle, SiApple, SiFacebook } from "react-icons/si";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 
 export default function Login() {
   const [location, navigate] = useLocation();
   const { login, loading: authLoading } = useAuth();
-  const [email, setEmail] = useState("");
+  const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
+  const [loginMethod, setLoginMethod] = useState<"password" | "otp">("password");
+  const [otpSent, setOtpSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const sendOTP = async () => {
+    if (!mobile.match(/^\d{10}$/)) {
+      setError("Please enter a valid 10-digit mobile number");
+      return;
+    }
+    // Mock OTP sending - in real app this would call backend
+    setOtpSent(true);
+    setError(null);
+    // Show success message that OTP is sent
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,9 +38,32 @@ export default function Login() {
     setError(null);
 
     try {
-      await login(email, password);
-      // Navigation will be handled by the auth context or layout components
-      navigate("/dashboard");
+      if (loginMethod === "otp") {
+        if (otp !== "1234") {
+          throw new Error("Invalid OTP. Use 1234 for testing.");
+        }
+        // For OTP login, we'll need to find user by mobile and authenticate
+        const response = await fetch("/api/v1/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mobile, otp }),
+        });
+        
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.message || "Login failed");
+        }
+        
+        const data = await response.json();
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+          navigate("/dashboard");
+        }
+      } else {
+        // Password login - convert mobile to email format for now
+        await login(`${mobile}@mobile.com`, password);
+        navigate("/dashboard");
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -57,39 +96,102 @@ export default function Login() {
 
           {error && <p className="text-red-500 text-center">{error}</p>}
 
-          <form className="space-y-4" onSubmit={handleLogin}>
-            <div>
-              <Input
-                type="text"
-                placeholder="Username / Email-id"
-                className="w-full"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <Input
-                type="password"
-                placeholder="Password"
-                className="w-full"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
+          <Tabs defaultValue="password" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="password">Password</TabsTrigger>
+              <TabsTrigger value="otp">OTP</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="password">
+              <form className="space-y-4" onSubmit={(e) => { setLoginMethod("password"); handleLogin(e); }}>
+                <div>
+                  <Label>Mobile Number</Label>
+                  <Input
+                    type="tel"
+                    placeholder="Enter 10-digit mobile number"
+                    className="w-full"
+                    value={mobile}
+                    onChange={(e) => setMobile(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label>Password</Label>
+                  <Input
+                    type="password"
+                    placeholder="Password"
+                    className="w-full"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
 
-            <div className="text-right">
-              <Link href="/forgot-password">
-                <a className="text-sm text-gray-600 hover:text-gray-900">
-                  Forgot Password?
-                </a>
-              </Link>
-            </div>
-            <Button className="w-full" type="submit">
-              Login
-            </Button>
-          </form>
+                <div className="text-right">
+                  <Link href="/forgot-password">
+                    <a className="text-sm text-gray-600 hover:text-gray-900">
+                      Forgot Password?
+                    </a>
+                  </Link>
+                </div>
+                <Button className="w-full" type="submit" disabled={loading}>
+                  {loading ? "Signing in..." : "Login with Password"}
+                </Button>
+              </form>
+            </TabsContent>
+            
+            <TabsContent value="otp">
+              <form className="space-y-4" onSubmit={handleLogin}>
+                <div>
+                  <Label>Mobile Number</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="tel"
+                      placeholder="Enter 10-digit mobile number"
+                      className="flex-1"
+                      value={mobile}
+                      onChange={(e) => setMobile(e.target.value)}
+                      required
+                    />
+                    <Button 
+                      type="button" 
+                      onClick={sendOTP} 
+                      disabled={otpSent || mobile.length !== 10}
+                      variant="outline"
+                    >
+                      {otpSent ? "Sent" : "Send OTP"}
+                    </Button>
+                  </div>
+                </div>
+                
+                {otpSent && (
+                  <div>
+                    <Label>Enter OTP</Label>
+                    <Input
+                      type="text"
+                      placeholder="Enter OTP (default: 1234)"
+                      className="w-full"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      required
+                    />
+                    <p className="text-sm text-gray-500 mt-1">
+                      For testing, use OTP: 1234
+                    </p>
+                  </div>
+                )}
+
+                <Button 
+                  className="w-full" 
+                  type="submit" 
+                  disabled={loading || !otpSent || !otp}
+                  onClick={() => setLoginMethod("otp")}
+                >
+                  {loading ? "Verifying..." : "Login with OTP"}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
 
           <div className="mt-6 text-center text-sm text-gray-500">
             <span>-or-</span>

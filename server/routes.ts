@@ -65,9 +65,16 @@ const UserSchema = z.object({
 });
 
 const LoginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8)
-});
+  email: z.string().email().optional(),
+  mobile: z.string().optional(),
+  password: z.string().min(8).optional(),
+  otp: z.string().optional()
+}).refine(data => {
+  // Either email+password or mobile+password or mobile+otp
+  return (data.email && data.password) || 
+         (data.mobile && data.password) || 
+         (data.mobile && data.otp);
+}, "Invalid login credentials");
 
 export async function registerRoutes(app: express.Express): Promise<Server> {
   // Serve uploaded files
@@ -121,20 +128,37 @@ export async function registerRoutes(app: express.Express): Promise<Server> {
         });
       }
 
-      const { email, password } = result.data;
+      const { email, mobile, password, otp } = result.data;
 
-      // Find user by email
-      const user = await storage.getUserByEmail(email);
+      let user;
+      
+      // Find user by email or mobile
+      if (email) {
+        user = await storage.getUserByEmail(email);
+      } else if (mobile) {
+        user = await storage.getUserByMobile(mobile);
+      }
+      
       if (!user) {
         return res.status(400).json({
           message: "Invalid credentials"
         });
       }
 
-      // Compare passwords
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(400).json({ message: "Invalid email or password" });
+      // Handle OTP authentication
+      if (otp) {
+        // For testing, accept OTP 1234
+        if (otp !== "1234") {
+          return res.status(400).json({ message: "Invalid OTP" });
+        }
+      } else if (password) {
+        // Compare passwords
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+          return res.status(400).json({ message: "Invalid credentials" });
+        }
+      } else {
+        return res.status(400).json({ message: "Password or OTP required" });
       }
 
       // Generate JWT Token

@@ -72,9 +72,9 @@ export default function Signup() {
           email,
           password,
           state,
-          district,
+          district: city, // Using city as district for Gujarat
           city,
-          phone_no:Number(phone),
+          phone_no: Number(phone),
         }),
       });
 
@@ -151,38 +151,125 @@ export default function Signup() {
             </div>
             <div>
               <Label>State</Label>
-              <Select onValueChange={setState}>
+              <Select onValueChange={setState} value={state}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select state" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="maharashtra">Maharashtra</SelectItem>
-                  <SelectItem value="delhi">Delhi</SelectItem>
-                  <SelectItem value="karnataka">Karnataka</SelectItem>
+                  <SelectItem value="gujarat">Gujarat</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label>District</Label>
-              <Input
-                type="text"
-                placeholder="District"
-                className="w-full"
-                value={district}
-                onChange={(e) => setDistrict(e.target.value)}
-                required
-              />
-            </div>
-            <div>
               <Label>City</Label>
-              <Input
-                type="text"
-                placeholder="City"
-                className="w-full"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                required
-              />
+              <Select onValueChange={setCity} value={city}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select city" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60 overflow-y-auto">
+                  <SelectItem value="ahmedabad">Ahmedabad</SelectItem>
+                  <SelectItem value="surat">Surat</SelectItem>
+                  <SelectItem value="vadodara">Vadodara</SelectItem>
+                  <SelectItem value="rajkot">Rajkot</SelectItem>
+                  <SelectItem value="bhavnagar">Bhavnagar</SelectItem>
+                  <SelectItem value="jamnagar">Jamnagar</SelectItem>
+                  <SelectItem value="junagadh">Junagadh</SelectItem>
+                  <SelectItem value="gandhinagar">Gandhinagar</SelectItem>
+                  <SelectItem value="anand">Anand</SelectItem>
+                  <SelectItem value="morbi">Morbi</SelectItem>
+                  <SelectItem value="nadiad">Nadiad</SelectItem>
+                  <SelectItem value="surendranagar">Surendranagar</SelectItem>
+                  <SelectItem value="bharuch">Bharuch</SelectItem>
+                  <SelectItem value="mehsana">Mehsana</SelectItem>
+                  <SelectItem value="bhuj">Bhuj</SelectItem>
+                  <SelectItem value="porbandar">Porbandar</SelectItem>
+                  <SelectItem value="palanpur">Palanpur</SelectItem>
+                  <SelectItem value="valsad">Valsad</SelectItem>
+                  <SelectItem value="vapi">Vapi</SelectItem>
+                  <SelectItem value="veraval">Veraval</SelectItem>
+                  <SelectItem value="godhra">Godhra</SelectItem>
+                  <SelectItem value="patan">Patan</SelectItem>
+                  <SelectItem value="kalol">Kalol</SelectItem>
+                  <SelectItem value="dahod">Dahod</SelectItem>
+                  <SelectItem value="botad">Botad</SelectItem>
+                  <SelectItem value="amreli">Amreli</SelectItem>
+                  <SelectItem value="deesa">Deesa</SelectItem>
+                  <SelectItem value="jetpur">Jetpur</SelectItem>
+                  <SelectItem value="sidhpur">Sidhpur</SelectItem>
+                  <SelectItem value="wankaner">Wankaner</SelectItem>
+                  <SelectItem value="padra">Padra</SelectItem>
+                  <SelectItem value="mangrol">Mangrol</SelectItem>
+                  <SelectItem value="visnagar">Visnagar</SelectItem>
+                  <SelectItem value="upleta">Upleta</SelectItem>
+                  <SelectItem value="una">Una</SelectItem>
+                  <SelectItem value="talaja">Talaja</SelectItem>
+                  <SelectItem value="mahuva">Mahuva</SelectItem>
+                  <SelectItem value="modasa">Modasa</SelectItem>
+                  <SelectItem value="lunawada">Lunawada</SelectItem>
+                  <SelectItem value="thangadh">Thangadh</SelectItem>
+                  <SelectItem value="vyara">Vyara</SelectItem>
+                  <SelectItem value="mandvi">Mandvi</SelectItem>
+                  <SelectItem value="petlad">Petlad</SelectItem>
+                  <SelectItem value="kapadvanj">Kapadvanj</SelectItem>
+                  <SelectItem value="umreth">Umreth</SelectItem>
+                  <SelectItem value="dholka">Dholka</SelectItem>
+                  <SelectItem value="disa">Disa</SelectItem>
+                  <SelectItem value="salaya">Salaya</SelectItem>
+                  <SelectItem value="limbdi">Limbdi</SelectItem>
+                  <SelectItem value="dhrangadhra">Dhrangadhra</SelectItem>
+                  <SelectItem value="rajula">Rajula</SelectItem>
+                  <SelectItem value="morvi">Morvi</SelectItem>
+                  <SelectItem value="wadhwan">Wadhwan</SelectItem>
+                  <SelectItem value="chotila">Chotila</SelectItem>
+                  <SelectItem value="halvad">Halvad</SelectItem>
+                  <SelectItem value="dhrol">Dhrol</SelectItem>
+                  <SelectItem value="jam_khambhaliya">Jam Khambhaliya</SelectItem>
+                  <SelectItem value="okha">Okha</SelectItem>
+                  <SelectItem value="dwarka">Dwarka</SelectItem>
+                  <SelectItem value="khambhalia">Khambhalia</SelectItem>
+                  <SelectItem value="sikka">Sikka</SelectItem>
+                  <SelectItem value="kalyanpur">Kalyanpur</SelectItem>
+                  <SelectItem value="ranavav">Ranavav</SelectItem>
+                  <SelectItem value="bhanvad">Bhanvad</SelectItem>
+                  <SelectItem value="lalpur">Lalpur</SelectItem>
+                  <SelectItem value="jodiya">Jodiya</SelectItem>
+                  <SelectItem value="khambhat">Khambhat</SelectItem>
+                  <SelectItem value="dhandhuka">Dhandhuka</SelectItem>
+                  <SelectItem value="bavla">Bavla</SelectItem>
+                  <SelectItem value="daskroi">Daskroi</SelectItem>
+                  <SelectItem value="sanand">Sanand</SelectItem>
+                  <SelectItem value="viramgam">Viramgam</SelectItem>
+                  <SelectItem value="dehgam">Dehgam</SelectItem>
+                  <SelectItem value="mandal">Mandal</SelectItem>
+                  <SelectItem value="mansa">Mansa</SelectItem>
+                  <SelectItem value="radhanpur">Radhanpur</SelectItem>
+                  <SelectItem value="vadgam">Vadgam</SelectItem>
+                  <SelectItem value="tharad">Tharad</SelectItem>
+                  <SelectItem value="dhanera">Dhanera</SelectItem>
+                  <SelectItem value="bhabhar">Bhabhar</SelectItem>
+                  <SelectItem value="vav">Vav</SelectItem>
+                  <SelectItem value="kankrej">Kankrej</SelectItem>
+                  <SelectItem value="dantiwada">Dantiwada</SelectItem>
+                  <SelectItem value="amirgadh">Amirgadh</SelectItem>
+                  <SelectItem value="sami">Sami</SelectItem>
+                  <SelectItem value="harij">Harij</SelectItem>
+                  <SelectItem value="chanasma">Chanasma</SelectItem>
+                  <SelectItem value="kadi">Kadi</SelectItem>
+                  <SelectItem value="unjha">Unjha</SelectItem>
+                  <SelectItem value="siddhpur">Siddhpur</SelectItem>
+                  <SelectItem value="becharaji">Becharaji</SelectItem>
+                  <SelectItem value="kheralu">Kheralu</SelectItem>
+                  <SelectItem value="vadnagar">Vadnagar</SelectItem>
+                  <SelectItem value="himmatnagar">Himmatnagar</SelectItem>
+                  <SelectItem value="idar">Idar</SelectItem>
+                  <SelectItem value="talod">Talod</SelectItem>
+                  <SelectItem value="bayad">Bayad</SelectItem>
+                  <SelectItem value="prantij">Prantij</SelectItem>
+                  <SelectItem value="dhansura">Dhansura</SelectItem>
+                  <SelectItem value="malpur">Malpur</SelectItem>
+                  <SelectItem value="meghraj">Meghraj</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label>Phone Number</Label>
