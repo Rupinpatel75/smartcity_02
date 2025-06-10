@@ -46,9 +46,7 @@ export default function ViewEmployees() {
 
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: number) => {
-      return apiRequest(`/api/v1/admin/users/${userId}`, {
-        method: "DELETE",
-      });
+      return apiRequest("DELETE", `/api/v1/admin/users/${userId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/v1/admin/users"] });
@@ -68,10 +66,7 @@ export default function ViewEmployees() {
 
   const toggleAdminMutation = useMutation({
     mutationFn: async ({ userId, isAdmin }: { userId: number; isAdmin: boolean }) => {
-      return apiRequest(`/api/v1/admin/users/${userId}/toggle-admin`, {
-        method: "PATCH",
-        body: JSON.stringify({ isAdmin }),
-      });
+      return apiRequest("PATCH", `/api/v1/admin/users/${userId}/toggle-admin`, { isAdmin });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/v1/admin/users"] });

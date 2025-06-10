@@ -293,7 +293,10 @@ export async function registerRoutes(app: express.Express): Promise<Server> {
 
       const users = await storage.getAllUsers();
       // Remove passwords from response
-      const usersWithoutPasswords = users.map(({ password, ...user }) => user);
+      const usersWithoutPasswords = users.map((user: any) => {
+        const { password, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+      });
       res.json(usersWithoutPasswords);
     } catch (error) {
       console.error("Error fetching users:", error);
