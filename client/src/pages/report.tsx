@@ -47,7 +47,7 @@ Icon.Default.mergeOptions({
   shadowUrl: "/marker-shadow.png",
 });
 
-function LocationMarker({ position, setPosition }) {
+function LocationMarker({ position, setPosition }: { position: [number, number] | null; setPosition: (pos: [number, number] | null) => void }) {
   useMapEvents({
     click(e) {
       setPosition([e.latlng.lat, e.latlng.lng]);
@@ -68,7 +68,6 @@ export default function Report() {
     confidence: number;
     issueType: string;
   } | null>(null);
-  const [filePreview, setFilePreview] = useState<string | null>(null);
   const [position, setPosition] = useState<[number, number] | null>(null);
 
   const form = useForm({
@@ -86,10 +85,10 @@ export default function Report() {
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setPosition([position.coords.latitude, position.coords.longitude]);
-          form.setValue("latitude", position.coords.latitude.toString());
-          form.setValue("longitude", position.coords.longitude.toString());
+        (pos) => {
+          setPosition([pos.coords.latitude, pos.coords.longitude]);
+          form.setValue("latitude", pos.coords.latitude.toString());
+          form.setValue("longitude", pos.coords.longitude.toString());
         },
         (error) => {
           console.error("Error getting location:", error);
@@ -215,7 +214,8 @@ export default function Report() {
       });
       form.reset();
       setSelectedFile(null);
-      setFilePreview(null);
+      setImagePreview(null);
+      setAiAnalysis(null);
     },
     onError: (error) => {
       toast({
@@ -611,72 +611,6 @@ export default function Report() {
           </form>
         </Form>
       </div>
-    </div>
-  );
-}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="space-y-6">
-                  <div className="border rounded-lg p-4">
-                    <p className="mb-2 text-sm font-medium">Location</p>
-                    <div className="h-[200px] md:h-[300px] rounded-lg overflow-hidden mb-4">
-                      {typeof window !== "undefined" && (
-                        <MapContainer
-                          center={position || [23.2156, 72.6369]}
-                          zoom={13}
-                          className="h-full w-full"
-                        >
-                          <TileLayer
-                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                          />
-                          <LocationMarker position={position} setPosition={setPosition} />
-                        </MapContainer>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="latitude"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Latitude</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="longitude"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Longitude</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <Button type="submit" className="w-full" disabled={mutation.isPending}>
-                {mutation.isPending ? "Submitting..." : "Submit Report"}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
     </div>
   );
 }
