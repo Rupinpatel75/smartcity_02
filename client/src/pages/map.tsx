@@ -117,6 +117,9 @@ export default function Map() {
     </div>
   );
 
+  const pendingCount = (cases as CaseData[]).filter(c => c.status === "pending").length;
+  const resolvedCount = (cases as CaseData[]).filter(c => c.status === "resolved").length;
+
   return (
     <div className="p-6">
       <div className="hidden md:block mb-6">
@@ -138,6 +141,43 @@ export default function Map() {
             </CardContent>
           </Card>
         )}
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 bg-red-500 rounded-full"></div>
+              <div>
+                <p className="text-sm font-medium">Pending Complaints</p>
+                <p className="text-2xl font-bold text-red-600">{pendingCount}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 bg-green-500 rounded-full"></div>
+              <div>
+                <p className="text-sm font-medium">Resolved Complaints</p>
+                <p className="text-2xl font-bold text-green-600">{resolvedCount}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <MapPin className="w-4 h-4 text-blue-500" />
+              <div>
+                <p className="text-sm font-medium">Total Showing</p>
+                <p className="text-2xl font-bold text-blue-600">{filteredCases.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <Card>
