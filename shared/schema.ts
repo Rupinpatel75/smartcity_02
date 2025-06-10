@@ -31,9 +31,10 @@ export const cases = pgTable("cases", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  points: true,
+  isAdmin: true,
 });
 
 export const insertCaseSchema = createInsertSchema(cases).omit({

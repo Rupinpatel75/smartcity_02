@@ -87,29 +87,30 @@ export function Sidebar({ isAdmin }: SidebarProps) {
               const IconComponent = item.icon;
 
               return (
-                <Link href={item.href} key={index}>
-                  <a
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
-                      isActive
-                        ? "bg-primary/10 text-primary font-medium"
-                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                    )}
-                  >
-                    <IconComponent className={cn("h-5 w-5", isActive ? "text-primary" : "")} />
-                    <span>{item.title}</span>
-                  </a>
+                <Link 
+                  href={item.href} 
+                  key={index}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
+                    isActive
+                      ? "bg-primary/10 text-primary font-medium"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  )}
+                >
+                  <IconComponent className={cn("h-5 w-5", isActive ? "text-primary" : "")} />
+                  <span>{item.title}</span>
                 </Link>
               );
             })}
           </nav>
         </div>
         <div className="p-4 border-t">
-          <Link href="/logout">
-            <a className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground">
-              <LogOut className="h-5 w-5" />
-              <span>Sign Out</span>
-            </a>
+          <Link 
+            href="/logout"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground"
+          >
+            <LogOut className="h-5 w-5" />
+            <span>Sign Out</span>
           </Link>
         </div>
       </div>

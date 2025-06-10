@@ -1,11 +1,6 @@
-import { users, type User, type InsertUser } from "@shared/schema";
-import { MongoClient, ObjectId } from 'mongodb';
-import type { InsertCase, Case } from '@shared/schema';
-// modify the interface with any CRUD methods
-// you might need
-const uri = process.env.MONGODB_URI || "mongodb://localhost:27017";
-const client = new MongoClient(uri);
-const dbName = "infrastructure_reports";
+import { users, cases, type User, type InsertUser, type InsertCase, type Case } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -48,7 +43,12 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      ...insertUser, 
+      id,
+      points: 0,
+      isAdmin: false
+    };
     this.users.set(id, user);
     return user;
   }
@@ -69,7 +69,8 @@ export class MemStorage implements IStorage {
       id,
       createdAt: new Date(),
       updatedAt: new Date(),
-      status: insertCase.status || 'open'
+      status: insertCase.status || 'pending',
+      imageUrl: insertCase.imageUrl || null
     };
     this.cases.set(id, case_);
     return case_;
