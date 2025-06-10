@@ -33,14 +33,14 @@ export default function Home() {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-4">
-              <Link href="/dashboard">
-                <a className="text-sm text-gray-600 hover:text-gray-900">Dashboard</a>
+              <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900">
+                Dashboard
               </Link>
-              <Link href="/map">
-                <a className="text-sm text-gray-600 hover:text-gray-900">Map</a>
+              <Link href="/map" className="text-sm text-gray-600 hover:text-gray-900">
+                Map
               </Link>
-              <Link href="/report">
-                <a className="text-sm text-gray-600 hover:text-gray-900">Create a report</a>
+              <Link href="/report" className="text-sm text-gray-600 hover:text-gray-900">
+                Create a report
               </Link>
               <Link href="/login">
                 <Button variant="outline" className="hidden sm:inline-flex">Log in</Button>
@@ -55,30 +55,20 @@ export default function Home() {
           {mobileMenuOpen && (
             <div className="md:hidden border-t">
               <div className="px-2 pt-2 pb-3 space-y-1">
-                <Link href="/dashboard">
-                  <a className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
-                    Dashboard
-                  </a>
+                <Link href="/dashboard" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                  Dashboard
                 </Link>
-                <Link href="/map">
-                  <a className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
-                    Map
-                  </a>
+                <Link href="/map" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                  Map
                 </Link>
-                <Link href="/report">
-                  <a className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
-                    Create a report
-                  </a>
+                <Link href="/report" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                  Create a report
                 </Link>
-                <Link href="/login">
-                  <a className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
-                    Log in
-                  </a>
+                <Link href="/login" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                  Log in
                 </Link>
-                <Link href="/signup">
-                  <a className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
-                    Sign up
-                  </a>
+                <Link href="/signup" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50">
+                  Sign up
                 </Link>
               </div>
             </div>

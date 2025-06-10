@@ -5,7 +5,12 @@ import { z } from "zod";
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
+  email: text("email").notNull().unique(),
   password: text("password").notNull(),
+  state: text("state").notNull(),
+  district: text("district").notNull(),
+  city: text("city").notNull(),
+  phoneNo: text("phone_no").notNull(),
   points: integer("points").default(0),
   isAdmin: boolean("is_admin").default(false),
 });
@@ -23,6 +28,7 @@ export const cases = pgTable("cases", {
   imageUrl: text("image_url"),
   userId: integer("user_id").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({

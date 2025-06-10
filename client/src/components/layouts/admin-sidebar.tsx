@@ -92,33 +92,32 @@ export function AdminSidebar() {
           {/* Nav Items */}
           <nav className="flex-1 space-y-1 p-4">
             {navItems.map((item) => (
-              <Link key={item.href} href={item.href}>
-                <a
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
-                    location === item.href
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent/50"
-                  )}
-                  onClick={() => setOpenMobile(false)}
-                >
-                  <item.icon
-                    className={cn("h-5 w-5", location === item.href ? "text-sidebar-accent-foreground" : "")}
-                  />
-                  {item.title}
-                </a>
+              <Link 
+                key={item.href} 
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
+                  location === item.href
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent/50"
+                )}
+                onClick={() => setOpenMobile(false)}
+              >
+                <item.icon
+                  className={cn("h-5 w-5", location === item.href ? "text-sidebar-accent-foreground" : "")}
+                />
+                {item.title}
               </Link>
             ))}
 
             {/* Sign Out */}
-            <Link href="/admin/logout">
-              <a
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-red-500 hover:bg-sidebar-accent/50"
-                onClick={() => setOpenMobile(false)}
-              >
-                <LogOut className="h-5 w-5" />
-                Sign Out
-              </a>
+            <Link 
+              href="/admin/logout"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-red-500 hover:bg-sidebar-accent/50"
+              onClick={() => setOpenMobile(false)}
+            >
+              <LogOut className="h-5 w-5" />
+              Sign Out
             </Link>
           </nav>
         </div>
