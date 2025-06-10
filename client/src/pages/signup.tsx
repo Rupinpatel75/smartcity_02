@@ -44,12 +44,36 @@ export default function Signup() {
 
 
   const validateForm = () => {
+    if (!username.trim()) {
+      setError("Username is required");
+      return false;
+    }
+    if (!email.trim()) {
+      setError("Email is required");
+      return false;
+    }
+    if (!email.includes('@')) {
+      setError("Please enter a valid email address");
+      return false;
+    }
     if (password.length < 8) {
       setError("Password must be at least 8 characters long");
       return false;
     }
     if (!phone.match(/^\d{10}$/)) {
       setError("Please enter a valid 10-digit phone number");
+      return false;
+    }
+    if (!phoneVerified) {
+      setError("Please verify your phone number first");
+      return false;
+    }
+    if (!state) {
+      setError("Please select a state");
+      return false;
+    }
+    if (!city) {
+      setError("Please select a city");
       return false;
     }
     return true;
@@ -64,27 +88,43 @@ export default function Signup() {
     setError(null);
 
     try {
-      const response = await fetch("http://localhost:5000/api/v1/signup", {
+      console.log("Submitting signup data:", {
+        username,
+        email,
+        phoneNo: phone,
+        state: "gujarat",
+        city
+      });
+
+      const response = await fetch("/api/v1/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username,
           email,
           password,
-          state,
-          district: city, // Using city as district for Gujarat
+          state: "gujarat",
+          district: city,
           city,
-          phone_no: Number(phone),
+          phoneNo: phone,
         }),
       });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Signup failed");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: "Network error occurred" }));
+        throw new Error(errorData.message || `Server error: ${response.status}`);
+      }
 
-      alert("Signup successful!");
-      navigate("/login"); // ✅ Redirect to Login
+      const data = await response.json();
+      alert("Signup successful! Please login with your credentials.");
+      navigate("/login");
     } catch (err: any) {
-      setError(err.message);
+      console.error("Signup error:", err);
+      if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        setError("Network connection failed. Please check your internet connection and try again.");
+      } else {
+        setError(err.message || "Signup failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
