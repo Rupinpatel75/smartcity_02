@@ -75,7 +75,7 @@ export default function Report() {
       title: "",
       description: "",
       category: "",
-      priority: "",
+      priority: "medium",
       location: "",
       latitude: "",
       longitude: "",
@@ -227,18 +227,39 @@ export default function Report() {
   });
 
   const onSubmit = (formData: any) => {
+    // Validate required fields on frontend
+    if (!formData.title || !formData.description || !formData.category || !formData.latitude || !formData.longitude) {
+      toast({
+        title: "Missing Required Fields",
+        description: "Please fill in all required fields: title, description, category, and location.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log("Form data being submitted:", formData);
+
     const data = new FormData();
-    data.append("title", formData.title);
-    data.append("description", formData.description);
+    data.append("title", formData.title.trim());
+    data.append("description", formData.description.trim());
     data.append("category", formData.category);
-    data.append("priority", formData.priority);
+    data.append("priority", formData.priority || "medium");
     data.append("latitude", formData.latitude);
     data.append("longitude", formData.longitude);
-    data.append("location", formData.location);
+    data.append("location", formData.location || `${formData.latitude}, ${formData.longitude}`);
 
     if (selectedFile) {
       data.append("image", selectedFile);
     }
+
+    // Debug log the form submission
+    console.log("Submitting form data with required fields:", {
+      title: formData.title,
+      description: formData.description,
+      category: formData.category,
+      latitude: formData.latitude,
+      longitude: formData.longitude
+    });
 
     mutation.mutate(data);
   };
