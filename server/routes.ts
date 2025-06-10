@@ -1,45 +1,23 @@
 import express, { Request, Response, NextFunction } from "express";
-import { storage } from "./storage";
-import jwt from "jsonwebtoken";
+import { createServer, Server } from "http";
 import bcrypt from "bcrypt";
-import { z } from "zod";
+import jwt from "jsonwebtoken";
 import multer from "multer";
 import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
-import type { Server } from "http";
+import { storage } from "./storage";
+import { insertUserSchema, insertCaseSchema, createEmployeeSchema, adminLoginSchema, citizenLoginSchema } from "@shared/schema";
 
-// Fix for __dirname in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+const upload = multer({ dest: "uploads/" });
 
-const JWT_SECRET = "123123";
-
-// Create uploads directory
-const uploadDir = path.join(__dirname, "..", "uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Configure Multer for file uploads
-const multerStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-const upload = multer({ storage: multerStorage });
-
-// Auth middleware
 interface AuthRequest extends Request {
   user?: { userId: number };
 }
 
 const authenticateUser = (req: AuthRequest, res: Response, next: NextFunction) => {
-  const token = req.header("Authorization")?.replace("Bearer ", "");
-  
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(" ")[1];
+
   if (!token) {
     return res.status(401).json({ message: "Access denied. No token provided." });
   }
@@ -53,118 +31,85 @@ const authenticateUser = (req: AuthRequest, res: Response, next: NextFunction) =
   }
 };
 
-// Schemas
-const UserSchema = z.object({
-  username: z.string(),
-  email: z.string().email(),
-  password: z.string().min(8),
-  state: z.string(),
-  district: z.string(),
-  city: z.string(),
-  phoneNo: z.string()
-});
+const requireRole = (roles: string[]) => {
+  return async (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
 
-const LoginSchema = z.object({
-  email: z.string().email().optional(),
-  mobile: z.string().optional(),
-  password: z.string().min(8).optional(),
-  otp: z.string().optional()
-}).refine(data => {
-  // Either email+password or mobile+password or mobile+otp
-  return (data.email && data.password) || 
-         (data.mobile && data.password) || 
-         (data.mobile && data.otp);
-}, "Invalid login credentials");
+    const user = await storage.getUser(req.user.userId);
+    if (!user || !roles.includes(user.role)) {
+      return res.status(403).json({ message: "Insufficient permissions" });
+    }
+
+    next();
+  };
+};
 
 export async function registerRoutes(app: express.Express): Promise<Server> {
-  // Serve uploaded files
-  app.use("/uploads", express.static(uploadDir));
-
-  // Signup route
+  // Citizen signup (mobile number + password)
   app.post("/api/v1/signup", async (req: Request, res: Response) => {
     try {
-      const result = UserSchema.safeParse(req.body);
-
-      if (!result.success) {
-        return res.status(400).json({ 
-          message: "Validation failed", 
-          errors: result.error.format() 
-        });
-      }
-
-      const data = result.data;
-
+      const validatedData = insertUserSchema.parse(req.body);
+      
       // Check if user already exists
-      const existingUser = await storage.getUserByEmail(data.email);
+      const existingUser = await storage.getUserByMobile(validatedData.phoneNo);
       if (existingUser) {
-        return res.status(400).json({ message: "User already exists" });
+        return res.status(400).json({ message: "User with this mobile number already exists" });
       }
 
-      // Hash the password
-      const hashedPassword = await bcrypt.hash(data.password, 10);
-
-      // Create new user
+      // Hash password
+      const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+      
+      // Create citizen user
       const user = await storage.createUser({
-        ...data,
-        password: hashedPassword
+        ...validatedData,
+        password: hashedPassword,
       });
 
-      res.status(201).json({ message: "User registered successfully" });
-    } catch (error) {
-      console.error("Registration Error:", error);
+      // Generate JWT token
+      const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "7d" });
+
+      res.status(201).json({
+        message: "User created successfully",
+        token,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          points: user.points || 0
+        },
+      });
+    } catch (error: any) {
+      console.error("Signup Error:", error);
+      if (error.name === "ZodError") {
+        return res.status(400).json({ message: "Invalid input data", errors: error.errors });
+      }
       res.status(500).json({ message: "Internal Server Error" });
     }
   });
 
-  // Login route
+  // Citizen login (mobile number + password)
   app.post("/api/v1/login", async (req: Request, res: Response) => {
     try {
-      const result = LoginSchema.safeParse(req.body);
+      const { phoneNo, password } = citizenLoginSchema.parse(req.body);
 
-      if (!result.success) {
-        return res.status(400).json({
-          message: "Validation failed", 
-          errors: result.error.format()
-        });
-      }
-
-      const { email, mobile, password, otp } = result.data;
-
-      let user;
-      
-      // Find user by email or mobile
-      if (email) {
-        user = await storage.getUserByEmail(email);
-      } else if (mobile) {
-        user = await storage.getUserByMobile(mobile);
-      }
-      
+      const user = await storage.getUserByMobile(phoneNo);
       if (!user) {
-        return res.status(400).json({
-          message: "Invalid credentials"
-        });
+        return res.status(400).json({ message: "Invalid credentials" });
       }
 
-      // Handle OTP authentication
-      if (otp) {
-        // For testing, accept OTP 1234
-        if (otp !== "1234") {
-          return res.status(400).json({ message: "Invalid OTP" });
-        }
-      } else if (password) {
-        // Compare passwords
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-          return res.status(400).json({ message: "Invalid credentials" });
-        }
-      } else {
-        return res.status(400).json({ message: "Password or OTP required" });
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      if (!isValidPassword) {
+        return res.status(400).json({ message: "Invalid credentials" });
       }
 
-      // Generate JWT Token
-      const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
-        expiresIn: "1h",
-      });
+      if (!user.isActive) {
+        return res.status(400).json({ message: "Account is inactive" });
+      }
+
+      const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "7d" });
 
       res.json({
         token,
@@ -182,229 +127,280 @@ export async function registerRoutes(app: express.Express): Promise<Server> {
     }
   });
 
-  // Create case route
+  // Admin login (username + password)
+  app.post("/api/v1/admin/login", async (req: Request, res: Response) => {
+    try {
+      const { username, password } = adminLoginSchema.parse(req.body);
+
+      const user = await storage.getUserByUsername(username);
+      if (!user || user.role !== "admin") {
+        return res.status(400).json({ message: "Invalid admin credentials" });
+      }
+
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      if (!isValidPassword) {
+        return res.status(400).json({ message: "Invalid admin credentials" });
+      }
+
+      if (!user.isActive) {
+        return res.status(400).json({ message: "Admin account is inactive" });
+      }
+
+      const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "7d" });
+
+      res.json({
+        token,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          city: user.city
+        },
+      });
+    } catch (error) {
+      console.error("Admin Login Error:", error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  });
+
+  // Employee login (username + password)
+  app.post("/api/v1/employee/login", async (req: Request, res: Response) => {
+    try {
+      const { username, password } = adminLoginSchema.parse(req.body);
+
+      const user = await storage.getUserByUsername(username);
+      if (!user || user.role !== "employee") {
+        return res.status(400).json({ message: "Invalid employee credentials" });
+      }
+
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      if (!isValidPassword) {
+        return res.status(400).json({ message: "Invalid employee credentials" });
+      }
+
+      if (!user.isActive) {
+        return res.status(400).json({ message: "Employee account is inactive" });
+      }
+
+      const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "7d" });
+
+      res.json({
+        token,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+          adminId: user.adminId
+        },
+      });
+    } catch (error) {
+      console.error("Employee Login Error:", error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  });
+
+  // Admin creates employee
+  app.post("/api/v1/admin/employees", authenticateUser, requireRole(["admin"]), async (req: AuthRequest, res: Response) => {
+    try {
+      const validatedData = createEmployeeSchema.parse(req.body);
+      const adminId = req.user!.userId;
+
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(validatedData.username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+
+      // Create employee
+      const employee = await storage.createEmployee({
+        ...validatedData,
+        password: hashedPassword,
+      }, adminId);
+
+      res.status(201).json({
+        message: "Employee created successfully",
+        employee: {
+          id: employee.id,
+          username: employee.username,
+          email: employee.email,
+          role: employee.role,
+          city: employee.city,
+          adminId: employee.adminId
+        }
+      });
+    } catch (error: any) {
+      console.error("Create Employee Error:", error);
+      if (error.name === "ZodError") {
+        return res.status(400).json({ message: "Invalid input data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  });
+
+  // Get employees under admin
+  app.get("/api/v1/admin/employees", authenticateUser, requireRole(["admin"]), async (req: AuthRequest, res: Response) => {
+    try {
+      const adminId = req.user!.userId;
+      const employees = await storage.getEmployeesByAdmin(adminId);
+      
+      res.json(employees.map(emp => ({
+        id: emp.id,
+        username: emp.username,
+        email: emp.email,
+        city: emp.city,
+        isActive: emp.isActive,
+        createdAt: emp.createdAt
+      })));
+    } catch (error) {
+      console.error("Get Employees Error:", error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  });
+
+  // Submit case/complaint
   app.post("/api/v1/cases", authenticateUser, upload.single("image"), async (req: AuthRequest, res: Response) => {
     try {
+      const userId = req.user!.userId;
+      
       const { title, description, category, priority, location, latitude, longitude } = req.body;
-      const userId = req.user?.userId;
-
-      if (!userId) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
 
       // Validate required fields
       if (!title || !description || !category || !latitude || !longitude) {
         return res.status(400).json({ message: "All required fields must be provided." });
       }
 
-      // Create new case
-      const case_ = await storage.createCase({
+      let imageUrl = null;
+      if (req.file) {
+        imageUrl = `/uploads/${req.file.filename}`;
+      }
+
+      const newCase = await storage.createCase({
         title,
         description,
         category,
-        priority: priority || "low",
+        priority: priority || "medium",
         location: location || "",
         latitude,
         longitude,
-        imageUrl: req.file ? `/uploads/${req.file.filename}` : null,
+        imageUrl,
         userId,
       });
 
-      res.status(201).json({ message: "Report created successfully", case: case_ });
+      res.status(201).json(newCase);
     } catch (error) {
-      console.error("Error creating case:", error);
-      res.status(500).json({ error: "Failed to create report" });
+      console.error("Create Case Error:", error);
+      res.status(500).json({ message: "Internal Server Error" });
     }
   });
 
-  // Get all cases
-  app.get("/api/v1/cases", async (req: Request, res: Response) => {
+  // Get cases for different user roles
+  app.get("/api/v1/cases", authenticateUser, async (req: AuthRequest, res: Response) => {
     try {
-      const cases = await storage.getCases();
-      res.json(cases);
-    } catch (error) {
-      res.status(500).json({ error: "Error fetching cases" });
-    }
-  });
-
-  // Get current user
-  app.get("/api/v1/user/me", authenticateUser, async (req: AuthRequest, res: Response) => {
-    try {
-      const userId = req.user?.userId;
-
-      if (!userId) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const user = await storage.getUser(userId);
+      const user = await storage.getUser(req.user!.userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Remove password from response
-      const { password, ...userWithoutPassword } = user;
-      res.json(userWithoutPassword);
+      let cases;
+      if (user.role === "admin") {
+        cases = await storage.getCasesByAdmin(user.id);
+      } else if (user.role === "employee") {
+        cases = await storage.getCasesByEmployee(user.id);
+      } else {
+        cases = await storage.getCases();
+      }
+
+      res.json(cases);
+    } catch (error) {
+      console.error("Get Cases Error:", error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  });
+
+  // Admin assigns case to employee
+  app.patch("/api/v1/admin/cases/:id/assign", authenticateUser, requireRole(["admin"]), async (req: AuthRequest, res: Response) => {
+    try {
+      const caseId = parseInt(req.params.id);
+      const { employeeId } = req.body;
+      const adminId = req.user!.userId;
+
+      if (!employeeId) {
+        return res.status(400).json({ message: "Employee ID is required" });
+      }
+
+      const updatedCase = await storage.assignCase(caseId, employeeId, adminId);
+      if (!updatedCase) {
+        return res.status(404).json({ message: "Case not found" });
+      }
+
+      res.json(updatedCase);
+    } catch (error) {
+      console.error("Assign Case Error:", error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  });
+
+  // Employee updates case status
+  app.patch("/api/v1/cases/:id/status", authenticateUser, requireRole(["employee", "admin"]), async (req: AuthRequest, res: Response) => {
+    try {
+      const caseId = parseInt(req.params.id);
+      const { status } = req.body;
+      const userId = req.user!.userId;
+
+      if (!status) {
+        return res.status(400).json({ message: "Status is required" });
+      }
+
+      const updatedCase = await storage.updateCaseStatus(caseId, status, userId);
+      if (!updatedCase) {
+        return res.status(404).json({ message: "Case not found" });
+      }
+
+      res.json(updatedCase);
+    } catch (error) {
+      console.error("Update Case Status Error:", error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  });
+
+  // Get current user info
+  app.get("/api/v1/user/me", authenticateUser, async (req: AuthRequest, res: Response) => {
+    try {
+      const user = await storage.getUser(req.user!.userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        city: user.city,
+        points: user.points || 0
+      });
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   });
 
-  // Update user
-  app.post("/api/v1/user/update", authenticateUser, async (req: AuthRequest, res: Response) => {
+  // Map endpoint
+  app.get("/api/cases/map", async (req: Request, res: Response) => {
     try {
-      const { username, email, phoneNo, city } = req.body;
-      const userId = req.user?.userId;
-
-      if (!userId) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const updatedUser = await storage.updateUser(userId, {
-        username,
-        email,
-        phoneNo,
-        city
-      });
-
-      if (!updatedUser) {
-        return res.status(400).json({ message: "Update failed" });
-      }
-
-      res.json({ message: "User updated successfully", user: updatedUser });
+      const cases = await storage.getCases();
+      res.json(cases);
     } catch (error) {
-      console.error("Error updating user:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      console.error("Map Cases Error:", error);
+      res.status(500).json({ message: "Internal Server Error" });
     }
   });
 
-  // Change password route
-  app.post("/api/v1/user/change-password", authenticateUser, async (req: AuthRequest, res: Response) => {
-    try {
-      const { currentPassword, newPassword } = req.body;
-      const userId = req.user?.userId;
-
-      if (!userId) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      if (!currentPassword || !newPassword) {
-        return res.status(400).json({ message: "Current password and new password are required" });
-      }
-
-      if (newPassword.length < 8) {
-        return res.status(400).json({ message: "New password must be at least 8 characters long" });
-      }
-
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      // Verify current password
-      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
-      if (!isCurrentPasswordValid) {
-        return res.status(400).json({ message: "Current password is incorrect" });
-      }
-
-      // Hash new password
-      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-
-      // Update password
-      const updatedUser = await storage.updateUser(userId, { password: hashedNewPassword });
-      if (!updatedUser) {
-        return res.status(400).json({ message: "Failed to update password" });
-      }
-
-      res.json({ message: "Password changed successfully" });
-    } catch (error) {
-      console.error("Error changing password:", error);
-      res.status(500).json({ error: "Internal Server Error" });
-    }
-  });
-
-  // Admin routes - Get all users
-  app.get("/api/v1/admin/users", authenticateUser, async (req: AuthRequest, res: Response) => {
-    try {
-      const userId = req.user?.userId;
-      if (!userId) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const user = await storage.getUser(userId);
-      if (!user || user.role !== "admin") {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-
-      const users = await storage.getAllUsers();
-      // Remove passwords from response
-      const usersWithoutPasswords = users.map((user: any) => {
-        const { password, ...userWithoutPassword } = user;
-        return userWithoutPassword;
-      });
-      res.json(usersWithoutPasswords);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      res.status(500).json({ error: "Internal Server Error" });
-    }
-  });
-
-  // Admin routes - Delete user
-  app.delete("/api/v1/admin/users/:userId", authenticateUser, async (req: AuthRequest, res: Response) => {
-    try {
-      const adminUserId = req.user?.userId;
-      const targetUserId = parseInt(req.params.userId);
-
-      if (!adminUserId) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const admin = await storage.getUser(adminUserId);
-      if (!admin || !admin.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-
-      const deleted = await storage.deleteUser(targetUserId);
-      if (!deleted) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.json({ message: "User deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      res.status(500).json({ error: "Internal Server Error" });
-    }
-  });
-
-  // Admin routes - Toggle admin status
-  app.patch("/api/v1/admin/users/:userId/toggle-admin", authenticateUser, async (req: AuthRequest, res: Response) => {
-    try {
-      const adminUserId = req.user?.userId;
-      const targetUserId = parseInt(req.params.userId);
-      const { isAdmin } = req.body;
-
-      if (!adminUserId) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const admin = await storage.getUser(adminUserId);
-      if (!admin || !admin.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-
-      const updatedUser = await storage.updateUser(targetUserId, { isAdmin });
-      if (!updatedUser) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.json({ message: "User role updated successfully", user: updatedUser });
-    } catch (error) {
-      console.error("Error updating user role:", error);
-      res.status(500).json({ error: "Internal Server Error" });
-    }
-  });
-
-  const { createServer } = await import("http");
-  const server = createServer(app);
-  return server;
+  const httpServer = createServer(app);
+  return httpServer;
 }
