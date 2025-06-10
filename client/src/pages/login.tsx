@@ -59,9 +59,24 @@ export default function Login() {
           navigate("/dashboard");
         }
       } else {
-        // Password login - convert mobile to email format for now
-        await login(`${mobile}@mobile.com`, password);
-        navigate("/dashboard");
+        // Password login with mobile number
+        const response = await fetch("/api/v1/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mobile, password }),
+        });
+        
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.message || "Login failed");
+        }
+        
+        const data = await response.json();
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+          window.location.reload(); // Refresh to update auth context
+          navigate("/dashboard");
+        }
       }
     } catch (err: any) {
       setError(err.message);
