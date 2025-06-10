@@ -346,8 +346,13 @@ export default function Signup() {
               </div>
             )}
             <Button className="w-full" type="submit" disabled={!phoneVerified || loading}>
-              {loading ? "Signing up..." : "Sign Up"}
+              {loading ? "Signing up..." : phoneVerified ? "Sign Up" : "Verify Phone First"}
             </Button>
+            {!phoneVerified && (
+              <p className="text-sm text-gray-600 text-center">
+                Please verify your phone number before signing up. Use OTP: 1234 for testing.
+              </p>
+            )}
           </form>
 
           <div className="mt-6 text-center text-sm">
