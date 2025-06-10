@@ -86,19 +86,55 @@ export default function Report() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          setPosition([pos.coords.latitude, pos.coords.longitude]);
-          form.setValue("latitude", pos.coords.latitude.toString());
-          form.setValue("longitude", pos.coords.longitude.toString());
+          const { latitude, longitude, accuracy } = pos.coords;
+          setPosition([latitude, longitude]);
+          setLocationAccuracy(accuracy);
+          form.setValue("latitude", latitude.toString());
+          form.setValue("longitude", longitude.toString());
+          form.setValue("location", `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
+          
+          toast({
+            title: "Location Detected",
+            description: `Location found with ${Math.round(accuracy)}m accuracy`,
+          });
         },
         (error) => {
-          console.error("Error getting location:", error);
+          console.error("Geolocation error:", error);
+          let errorMessage = "Could not get your location. ";
+          
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage += "Please allow location access in your browser settings.";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage += "Location information is unavailable.";
+              break;
+            case error.TIMEOUT:
+              errorMessage += "Location request timed out. Try again.";
+              break;
+            default:
+              errorMessage += "An unknown error occurred.";
+              break;
+          }
+          
           toast({
             title: "Location Error",
-            description: "Could not get your current location. Please enter manually.",
+            description: errorMessage,
             variant: "destructive",
           });
         },
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 300000
+        }
       );
+    } else {
+      toast({
+        title: "Geolocation Not Supported",
+        description: "Your browser doesn't support location services.",
+        variant: "destructive",
+      });
     }
   }, []);
 
@@ -478,13 +514,35 @@ export default function Report() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    {/* Location Status */}
+                    {!position && (
+                      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div className="flex items-center gap-2 text-yellow-800 mb-2">
+                          <AlertTriangle className="w-4 h-4" />
+                          <span className="font-medium">Location Required</span>
+                        </div>
+                        <p className="text-sm text-yellow-700 mb-3">
+                          Please allow location access or enter manually to submit your report.
+                        </p>
+                        <div className="space-y-2">
+                          <p className="text-xs text-yellow-600">
+                            <strong>To enable location:</strong>
+                          </p>
+                          <ul className="text-xs text-yellow-600 space-y-1">
+                            <li>• Click the location icon in your browser address bar</li>
+                            <li>• Select "Allow" when prompted for location access</li>
+                            <li>• Or click "Use My Location" button below</li>
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Location Controls */}
                     <div className="space-y-3">
                       <div className="flex gap-2">
                         <Button
                           type="button"
-                          variant="outline"
-                          size="sm"
+                          variant={position ? "outline" : "default"}
                           onClick={getCurrentLocation}
                           disabled={isGettingLocation}
                           className="flex-1"
@@ -494,17 +552,18 @@ export default function Report() {
                           ) : (
                             <Navigation className="w-4 h-4 mr-2" />
                           )}
-                          {isGettingLocation ? 'Getting Location...' : 'Use My Location'}
+                          {isGettingLocation ? 'Detecting Location...' : position ? 'Update Location' : 'Use My Location'}
                         </Button>
                         {position && (
                           <Button
                             type="button"
                             variant="outline"
-                            size="sm"
                             onClick={() => {
                               setPosition(null);
+                              setLocationAccuracy(null);
                               form.setValue("latitude", "");
                               form.setValue("longitude", "");
+                              form.setValue("location", "");
                             }}
                           >
                             Clear
@@ -512,10 +571,10 @@ export default function Report() {
                         )}
                       </div>
 
-                      {locationAccuracy && (
-                        <div className="flex items-center gap-2 text-sm text-green-600">
+                      {position && locationAccuracy && (
+                        <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 p-2 rounded">
                           <CheckCircle className="w-4 h-4" />
-                          <span>Location accurate to {Math.round(locationAccuracy)}m</span>
+                          <span>Location detected (±{Math.round(locationAccuracy)}m accuracy)</span>
                         </div>
                       )}
                     </div>
@@ -538,35 +597,104 @@ export default function Report() {
                       )}
                     />
 
-                    {/* Coordinates */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <FormField
-                        control={form.control}
-                        name="latitude"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Latitude</FormLabel>
-                            <FormControl>
-                              <Input {...field} placeholder="0.0000" readOnly />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="longitude"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Longitude</FormLabel>
-                            <FormControl>
-                              <Input {...field} placeholder="0.0000" readOnly />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                    {/* Manual Location Entry */}
+                    {!position && (
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <h4 className="text-sm font-medium text-blue-800 mb-2">Manual Location Entry</h4>
+                        <p className="text-xs text-blue-600 mb-3">
+                          If location detection isn't working, you can enter coordinates manually:
+                        </p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <FormField
+                            control={form.control}
+                            name="latitude"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs">Latitude *</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    {...field} 
+                                    placeholder="e.g. 23.0225"
+                                    type="number"
+                                    step="any"
+                                    onChange={(e) => {
+                                      field.onChange(e);
+                                      const lat = parseFloat(e.target.value);
+                                      const lng = parseFloat(form.getValues("longitude"));
+                                      if (!isNaN(lat) && !isNaN(lng)) {
+                                        setPosition([lat, lng]);
+                                      }
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="longitude"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-xs">Longitude *</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    {...field} 
+                                    placeholder="e.g. 72.5714"
+                                    type="number"
+                                    step="any"
+                                    onChange={(e) => {
+                                      field.onChange(e);
+                                      const lat = parseFloat(form.getValues("latitude"));
+                                      const lng = parseFloat(e.target.value);
+                                      if (!isNaN(lat) && !isNaN(lng)) {
+                                        setPosition([lat, lng]);
+                                      }
+                                    }}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <p className="text-xs text-blue-500 mt-2">
+                          You can find coordinates using Google Maps or any map application
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Coordinates Display */}
+                    {position && (
+                      <div className="grid grid-cols-2 gap-2">
+                        <FormField
+                          control={form.control}
+                          name="latitude"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Latitude</FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="0.0000" readOnly />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="longitude"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Longitude</FormLabel>
+                              <FormControl>
+                                <Input {...field} placeholder="0.0000" readOnly />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
 
                     {/* Map Preview */}
                     {position && (
