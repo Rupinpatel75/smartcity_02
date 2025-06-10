@@ -7,12 +7,18 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByMobile(mobile: string): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
+  getEmployeesByAdmin(adminId: number): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
+  createEmployee(employee: any, adminId: number): Promise<User>;
   updateUser(id: number, updates: Partial<User>): Promise<User | undefined>;
   deleteUser(id: number): Promise<boolean>;
   createCase(case_: InsertCase): Promise<Case>;
   getCases(): Promise<Case[]>;
+  getCasesByAdmin(adminId: number): Promise<Case[]>;
+  getCasesByEmployee(employeeId: number): Promise<Case[]>;
   getCaseById(id: number): Promise<Case | undefined>;
+  assignCase(caseId: number, employeeId: number, adminId: number): Promise<Case | undefined>;
+  updateCaseStatus(caseId: number, status: string, userId: number): Promise<Case | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -49,9 +55,68 @@ export class DatabaseStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const [user] = await db
       .insert(users)
-      .values(insertUser)
+      .values({ ...insertUser, role: "citizen" })
       .returning();
     return this.normalizeUser(user);
+  }
+
+  async getEmployeesByAdmin(adminId: number): Promise<User[]> {
+    const employees = await db.select().from(users).where(eq(users.adminId, adminId));
+    return employees.map(user => this.normalizeUser(user));
+  }
+
+  async createEmployee(employee: any, adminId: number): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values({ ...employee, role: "employee", adminId })
+      .returning();
+    return this.normalizeUser(user);
+  }
+
+  async getCasesByAdmin(adminId: number): Promise<Case[]> {
+    // Get cases in admin's city
+    const admin = await this.getUser(adminId);
+    if (!admin) return [];
+    
+    const results = await db.select().from(cases)
+      .innerJoin(users, eq(cases.userId, users.id))
+      .where(eq(users.city, admin.city));
+    return results.map(r => r.cases);
+  }
+
+  async getCasesByEmployee(employeeId: number): Promise<Case[]> {
+    return db.select().from(cases).where(eq(cases.assignedTo, employeeId));
+  }
+
+  async assignCase(caseId: number, employeeId: number, adminId: number): Promise<Case | undefined> {
+    const [updatedCase] = await db
+      .update(cases)
+      .set({ 
+        assignedTo: employeeId, 
+        assignedBy: adminId,
+        assignedAt: new Date()
+      })
+      .where(eq(cases.id, caseId))
+      .returning();
+    return updatedCase;
+  }
+
+  async updateCaseStatus(caseId: number, status: string, userId: number): Promise<Case | undefined> {
+    const updateData: any = { 
+      status, 
+      updatedAt: new Date() 
+    };
+    
+    if (status === 'resolved') {
+      updateData.resolvedAt = new Date();
+    }
+
+    const [updatedCase] = await db
+      .update(cases)
+      .set(updateData)
+      .where(eq(cases.id, caseId))
+      .returning();
+    return updatedCase;
   }
 
   async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {

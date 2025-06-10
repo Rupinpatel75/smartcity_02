@@ -172,7 +172,7 @@ export async function registerRoutes(app: express.Express): Promise<Server> {
           id: user.id,
           username: user.username,
           email: user.email,
-          role: user.isAdmin ? "admin" : "citizen",
+          role: user.role,
           points: user.points || 0
         },
       });
@@ -332,7 +332,7 @@ export async function registerRoutes(app: express.Express): Promise<Server> {
       }
 
       const user = await storage.getUser(userId);
-      if (!user || !user.isAdmin) {
+      if (!user || user.role !== "admin") {
         return res.status(403).json({ message: "Admin access required" });
       }
 
