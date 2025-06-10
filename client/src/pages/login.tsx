@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "wouter";
-import { SiGoogle, SiApple, SiFacebook } from "react-icons/si";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/context/AuthContext";
@@ -193,29 +192,10 @@ export default function Login() {
             </TabsContent>
           </Tabs>
 
-          <div className="mt-6 text-center text-sm text-gray-500">
-            <span>-or-</span>
-          </div>
-
-          <div className="mt-6 space-y-3">
-            <Button variant="outline" className="w-full">
-              <SiGoogle className="mr-2 h-4 w-4" />
-              Continue with Google
-            </Button>
-            <Button variant="outline" className="w-full">
-              <SiApple className="mr-2 h-4 w-4" />
-              Continue with Apple
-            </Button>
-            <Button variant="outline" className="w-full">
-              <SiFacebook className="mr-2 h-4 w-4" />
-              Continue with Facebook
-            </Button>
-          </div>
-
           <div className="mt-6 text-center text-sm">
             <span className="text-gray-600">Don't have an account? </span>
-            <Link href="/signup">
-              <a className="text-primary hover:underline">Signup</a>
+            <Link href="/signup" className="text-primary hover:underline">
+              Sign Up
             </Link>
           </div>
         </CardContent>

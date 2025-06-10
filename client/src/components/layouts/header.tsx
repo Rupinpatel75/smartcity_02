@@ -12,17 +12,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useState } from 'react';
-
+import { useAuth } from "@/context/AuthContext";
 import { useSidebar } from "@/components/ui/sidebar";
 
 
 export function Header() {
-  // This would typically come from your auth context
-  const user = {
-    name: "Admin",
-    image: "/avatar.png", 
-  };
+  const { user, logout } = useAuth();
   const { setOpenMobile } = useSidebar();
+
+  const handleLogout = async () => {
+    await logout();
+  };
 
   return (
     <header className="border-b">
@@ -31,9 +31,7 @@ export function Header() {
           <Button
             variant="ghost"
             className="mr-2 px-2 md:hidden"
-            onClick={() => {
-              setOpenMobile((prev) => !prev);
-            }}
+            onClick={() => setOpenMobile(true)}
           >
             <Menu className="h-5 w-5" />
           </Button>
@@ -63,22 +61,23 @@ export function Header() {
             <DropdownMenuTrigger asChild>
               <div className="flex items-center gap-2 cursor-pointer">
                 <Avatar>
-                  <AvatarImage src={user.image} alt={user.name} />
-                  <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                  <AvatarImage src="/avatar.png" alt={user?.username || "User"} />
+                  <AvatarFallback>{user?.username?.charAt(0) || "U"}</AvatarFallback>
                 </Avatar>
                 <div className="hidden md:block text-sm">
-                  <p className="font-medium">{user.name}</p>
-                  <p className="text-xs text-muted-foreground">{user.name}</p>
+                  <p className="font-medium">{user?.username || "User"}</p>
+                  <p className="text-xs text-muted-foreground">{user?.role === 'admin' ? 'Administrator' : 'Citizen'}</p>
                 </div>
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link href="/settings">Settings</Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Log out</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </nav>
