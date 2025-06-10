@@ -31,7 +31,7 @@ export default function Dashboard() {
 
   // Data for points and achievements
   const pointsData = {
-    totalPoints: userProfile?.points || user?.points || 120,
+    totalPoints: (userProfile as any)?.points || user?.points || 120,
     availableRewards: 3,
     recentEarnings: 25,
     nextRewardAt: 200,
@@ -178,7 +178,7 @@ export default function Dashboard() {
                   </div>
                 ) : recentReports.length > 0 ? (
                   <div className="space-y-4">
-                    {recentReports.map((report) => (
+                    {recentReports.map((report: any) => (
                       <div key={report.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                           <div className="flex-1">

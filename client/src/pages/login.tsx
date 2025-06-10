@@ -5,12 +5,12 @@ import { Link } from "wouter";
 import { SiGoogle, SiApple, SiFacebook } from "react-icons/si";
 import { useState } from "react";
 import { useLocation } from "wouter";
-import axios from 'axios'; //Import axios
+import { useAuth } from "@/context/AuthContext";
 
 
 export default function Login() {
   const [location, navigate] = useLocation();
-  // const navigate = useNavigate(); // Hook for redirection
+  const { login, loading: authLoading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -22,32 +22,9 @@ export default function Login() {
     setError(null);
 
     try {
-      const response = await fetch("http://localhost:5000/api/v1/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed");
-      }
-
-      const { token, user } = data;
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-
-      // Set authorization header for future requests
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-      if (user.isAdmin) {
-        navigate("/admin/dashboard");
-      } else {
-        navigate("/dashboard");
-      }
+      await login(email, password);
+      // Navigation will be handled by the auth context or layout components
+      navigate("/dashboard");
     } catch (err: any) {
       setError(err.message);
     } finally {

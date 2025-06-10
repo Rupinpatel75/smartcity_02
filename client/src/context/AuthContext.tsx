@@ -27,12 +27,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Check if user is logged in on mount
     const checkAuth = async () => {
       try {
-        const response = await axios.get("/api/auth/me");
-        if (response.data) {
-          setUser(response.data);
+        const token = localStorage.getItem('token');
+        if (token) {
+          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          const response = await axios.get("/api/v1/user/me");
+          if (response.data) {
+            setUser(response.data);
+          }
         }
       } catch (error) {
         console.error("Not authenticated");
+        localStorage.removeItem('token');
+        delete axios.defaults.headers.common['Authorization'];
       } finally {
         setLoading(false);
       }
@@ -41,11 +47,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, []);
 
-  const login = async (username: string, password: string) => {
+  const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      const response = await axios.post("/api/auth/login", { username, password });
-      setUser(response.data);
+      const response = await axios.post("/api/v1/login", { email, password });
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+        setUser(response.data.user);
+      }
     } finally {
       setLoading(false);
     }
@@ -53,7 +63,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await axios.post("/api/auth/logout");
+      localStorage.removeItem('token');
+      delete axios.defaults.headers.common['Authorization'];
       setUser(null);
     } catch (error) {
       console.error("Error logging out:", error);

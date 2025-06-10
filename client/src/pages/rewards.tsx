@@ -108,7 +108,7 @@ export default function Rewards() {
     enabled: !!user,
   });
 
-  const currentPoints = userProfile?.points || 0;
+  const currentPoints = (userProfile as any)?.points || user?.points || 0;
 
   const redeemReward = useMutation({
     mutationFn: async (rewardId: number) => {
