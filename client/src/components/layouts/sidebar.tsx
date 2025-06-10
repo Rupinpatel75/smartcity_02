@@ -30,19 +30,9 @@ const navItems = [
     icon: LayoutDashboard,
   },
   {
-    title: "Users",
-    href: "/users",
-    icon: Users,
-  },
-  {
     title: "Cases",
     href: "/cases",
     icon: Briefcase,
-  },
-  {
-    title: "Case Report",
-    href: "/case-report",
-    icon: LineChart,
   },
   {
     title: "Rewards",

@@ -106,22 +106,7 @@ function Router() {
             </div>
           </AdminLayout>
         </Route>
-        <Route path="/users">
-          <AuthLayout>
-            <div className="h-full p-6">
-              <h1 className="text-2xl font-bold mb-6">Users</h1>
-              <p>Users management page</p>
-            </div>
-          </AuthLayout>
-        </Route>
-        <Route path="/case-report">
-          <AuthLayout>
-            <div className="h-full p-6">
-              <h1 className="text-2xl font-bold mb-6">Case Reports</h1>
-              <p>Case reports and analytics</p>
-            </div>
-          </AuthLayout>
-        </Route>
+
         <Route component={NotFound} />
       </Switch>
     </div>
