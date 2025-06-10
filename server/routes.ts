@@ -90,19 +90,40 @@ export async function registerRoutes(app: express.Express): Promise<Server> {
     }
   });
 
-  // Citizen login (mobile number + password)
+  // Citizen login (mobile number + password or OTP)
   app.post("/api/v1/login", async (req: Request, res: Response) => {
     try {
-      const { phoneNo, password } = citizenLoginSchema.parse(req.body);
+      // Handle both password and OTP login
+      const { phoneNo, mobile, password, otp } = req.body;
+      
+      // Use phoneNo if provided, otherwise use mobile (for OTP login)
+      const mobileNumber = phoneNo || mobile;
+      
+      if (!mobileNumber) {
+        return res.status(400).json({ message: "Mobile number is required" });
+      }
 
-      const user = await storage.getUserByMobile(phoneNo);
+      const user = await storage.getUserByMobile(mobileNumber);
       if (!user) {
         return res.status(400).json({ message: "Invalid credentials" });
       }
 
-      const isValidPassword = await bcrypt.compare(password, user.password);
-      if (!isValidPassword) {
-        return res.status(400).json({ message: "Invalid credentials" });
+      // Handle OTP login
+      if (otp) {
+        // For demo purposes, accept 1234 as valid OTP
+        if (otp !== "1234") {
+          return res.status(400).json({ message: "Invalid OTP" });
+        }
+      } else {
+        // Handle password login
+        if (!password) {
+          return res.status(400).json({ message: "Password is required" });
+        }
+        
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        if (!isValidPassword) {
+          return res.status(400).json({ message: "Invalid credentials" });
+        }
       }
 
       if (!user.isActive) {
