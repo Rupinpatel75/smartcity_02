@@ -63,7 +63,7 @@ export default function Login() {
         const response = await fetch("/api/v1/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mobile, password }),
+          body: JSON.stringify({ phoneNo: mobile, password }),
         });
         
         if (!response.ok) {
@@ -212,6 +212,22 @@ export default function Login() {
             <Link href="/signup" className="text-primary hover:underline">
               Sign Up
             </Link>
+          </div>
+
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+            <p className="text-sm text-gray-600 mb-3 text-center">Staff Login Options:</p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Link href="/admin/login" className="flex-1">
+                <Button variant="outline" size="sm" className="w-full">
+                  Admin Login
+                </Button>
+              </Link>
+              <Link href="/employee/login" className="flex-1">
+                <Button variant="outline" size="sm" className="w-full">
+                  Employee Login
+                </Button>
+              </Link>
+            </div>
           </div>
         </CardContent>
       </Card>
