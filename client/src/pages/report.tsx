@@ -382,12 +382,13 @@ export default function Report() {
                       name="title"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Issue Title</FormLabel>
+                          <FormLabel>Issue Title *</FormLabel>
                           <FormControl>
                             <Input 
                               {...field} 
                               placeholder="Brief description of the issue"
                               className="w-full"
+                              required
                             />
                           </FormControl>
                           <FormMessage />
@@ -400,8 +401,8 @@ export default function Report() {
                       name="category"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Category</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
+                          <FormLabel>Category *</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select issue type" />
@@ -450,12 +451,13 @@ export default function Report() {
                       name="description"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Detailed Description</FormLabel>
+                          <FormLabel>Detailed Description *</FormLabel>
                           <FormControl>
                             <Textarea 
                               {...field} 
                               placeholder="Provide detailed information about the issue..."
                               className="min-h-[100px]"
+                              required
                             />
                           </FormControl>
                           <FormMessage />
