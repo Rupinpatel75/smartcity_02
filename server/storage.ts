@@ -15,17 +15,17 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user || undefined;
+    return user ? this.normalizeUser(user) : undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user || undefined;
+    return user ? this.normalizeUser(user) : undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.email, email));
-    return user || undefined;
+    return user ? this.normalizeUser(user) : undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -33,7 +33,7 @@ export class DatabaseStorage implements IStorage {
       .insert(users)
       .values(insertUser)
       .returning();
-    return user;
+    return this.normalizeUser(user);
   }
 
   async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {
@@ -42,7 +42,15 @@ export class DatabaseStorage implements IStorage {
       .set(updates)
       .where(eq(users.id, id))
       .returning();
-    return user || undefined;
+    return user ? this.normalizeUser(user) : undefined;
+  }
+
+  private normalizeUser(user: any): User {
+    return {
+      ...user,
+      isAdmin: user.isAdmin || false,
+      points: user.points || 0
+    };
   }
 
   async createCase(insertCase: InsertCase): Promise<Case> {

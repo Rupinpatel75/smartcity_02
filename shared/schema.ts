@@ -43,8 +43,6 @@ export const insertCaseSchema = createInsertSchema(cases).omit({
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect & {
-isAdmin?: boolean;
-};
+export type User = typeof users.$inferSelect;
 export type Case = typeof cases.$inferSelect;
 export type InsertCase = z.infer<typeof insertCaseSchema>;
