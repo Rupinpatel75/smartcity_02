@@ -3,6 +3,10 @@ import { useState } from "react";
 import { AdminLayout } from "@/components/layouts/admin-layout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { Link } from "wouter";
 import {
   Select,
   SelectContent,
@@ -19,39 +23,91 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-type Employee = {
-  id: string;
-  name: string;
+type User = {
+  id: number;
+  username: string;
   email: string;
-  phoneNumber: string;
-  role: string;
+  phoneNo: string;
+  city: string;
+  state: string;
+  isAdmin: boolean;
+  points?: number;
 };
 
 export default function ViewEmployees() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedRole, setSelectedRole] = useState("All Roles");
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  // Mock data - replace with actual API call
-  const employees: Employee[] = [
-    {
-      id: "#1223",
-      name: "Patel Kavya",
-      email: "patel@gmail.com",
-      phoneNumber: "9225434152",
-      role: "Manager",
+  const { data: users = [], isLoading } = useQuery({
+    queryKey: ["/api/v1/admin/users"],
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      return apiRequest("/api/v1/admin/users", {
+        method: "DELETE",
+        body: { userId },
+      });
     },
-  ];
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/v1/admin/users"] });
+      toast({
+        title: "Success",
+        description: "User deleted successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete user",
+        variant: "destructive",
+      });
+    },
+  });
 
-  const handleSearch = () => {
-    // Implement search functionality
+  const toggleAdminMutation = useMutation({
+    mutationFn: async ({ userId, isAdmin }: { userId: number; isAdmin: boolean }) => {
+      return apiRequest("/api/v1/admin/users/toggle-admin", {
+        method: "PATCH",
+        body: { userId, isAdmin },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/v1/admin/users"] });
+      toast({
+        title: "Success",
+        description: "User role updated successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update user role",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const filteredUsers = Array.isArray(users) ? users.filter((user: User) => {
+    const matchesSearch = user.username.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+                         user.email.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+                         user.phoneNo.includes(searchKeyword);
+    const matchesRole = selectedRole === "All Roles" || 
+                       (selectedRole === "Admin" && user.isAdmin) ||
+                       (selectedRole === "Citizen" && !user.isAdmin);
+    return matchesSearch && matchesRole;
+  }) : [];
+
+  const handleDelete = (userId: number) => {
+    if (confirm("Are you sure you want to delete this user?")) {
+      deleteUserMutation.mutate(userId);
+    }
   };
 
-  const handleAssignTask = (employeeId: string) => {
-    // Implement assign task functionality
-  };
-
-  const handleDelete = (employeeId: string) => {
-    // Implement delete functionality
+  const handleToggleAdmin = (userId: number, currentAdmin: boolean) => {
+    toggleAdminMutation.mutate({ userId, isAdmin: !currentAdmin });
   };
 
   return (

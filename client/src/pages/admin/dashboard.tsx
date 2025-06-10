@@ -2,6 +2,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { AdminLayout } from "@/components/layouts/admin-layout";
 import { Bar } from "react-chartjs-2";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/context/AuthContext";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -22,18 +24,32 @@ ChartJS.register(
 );
 
 export default function AdminDashboard() {
+  const { user } = useAuth();
+  
+  const { data: cases = [], isLoading: casesLoading } = useQuery({
+    queryKey: ["/api/v1/cases"],
+  });
+
+  const { data: users = [], isLoading: usersLoading } = useQuery({
+    queryKey: ["/api/v1/admin/users"],
+  });
+
+  // Calculate statistics from real data
+  const totalCases = Array.isArray(cases) ? cases.length : 0;
+  const resolvedCases = Array.isArray(cases) ? cases.filter((c: any) => c.status === 'resolved').length : 0;
+  const pendingCases = Array.isArray(cases) ? cases.filter((c: any) => c.status === 'pending').length : 0;
+  const highPriorityCases = Array.isArray(cases) ? cases.filter((c: any) => c.priority === 'high').length : 0;
+  const mediumPriorityCases = Array.isArray(cases) ? cases.filter((c: any) => c.priority === 'medium').length : 0;
+  const lowPriorityCases = Array.isArray(cases) ? cases.filter((c: any) => c.priority === 'low').length : 0;
+  const totalUsers = Array.isArray(users) ? users.length : 0;
+
   const barChartData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July'],
+    labels: ['Total', 'Resolved', 'Pending', 'High Priority', 'Medium Priority', 'Low Priority'],
     datasets: [
       {
-        label: 'Solved Cases',
-        data: [300, 280, 250, 300, 320, 310, 340],
-        backgroundColor: '#4ade80',
-      },
-      {
-        label: 'Pending Cases',
-        data: [400, 350, 380, 370, 400, 380, 420],
-        backgroundColor: '#fbbf24',
+        label: 'Cases Count',
+        data: [totalCases, resolvedCases, pendingCases, highPriorityCases, mediumPriorityCases, lowPriorityCases],
+        backgroundColor: ['#3b82f6', '#4ade80', '#fbbf24', '#ef4444', '#f97316', '#22c55e'],
       },
     ],
   };
@@ -43,11 +59,11 @@ export default function AdminDashboard() {
       <div className="space-y-6 p-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold">Dashboard</h1>
-            <p className="text-gray-500">Good Afternoon, Admin !</p>
+            <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+            <p className="text-gray-500">Welcome back, {user?.username}!</p>
           </div>
           <button className="px-4 py-2 bg-blue-600 text-white rounded-lg">
-            Export
+            Export Report
           </button>
         </div>
 
@@ -61,7 +77,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-4">
                   <div className="p-2 bg-purple-200 rounded-full">👥</div>
                   <div>
-                    <p className="text-2xl font-bold">5000</p>
+                    <p className="text-2xl font-bold">{usersLoading ? "..." : totalUsers}</p>
                     <p className="text-sm text-gray-500">Total Users</p>
                   </div>
                 </div>
@@ -73,7 +89,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-4">
                   <div className="p-2 bg-orange-200 rounded-full">📁</div>
                   <div>
-                    <p className="text-2xl font-bold">4500</p>
+                    <p className="text-2xl font-bold">{casesLoading ? "..." : totalCases}</p>
                     <p className="text-sm text-gray-500">Total Cases</p>
                   </div>
                 </div>
@@ -85,7 +101,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-4">
                   <div className="p-2 bg-green-200 rounded-full">✅</div>
                   <div>
-                    <p className="text-2xl font-bold">3000</p>
+                    <p className="text-2xl font-bold">{casesLoading ? "..." : resolvedCases}</p>
                     <p className="text-sm text-gray-500">Solved Cases</p>
                   </div>
                 </div>
@@ -97,7 +113,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-4">
                   <div className="p-2 bg-red-200 rounded-full">⏳</div>
                   <div>
-                    <p className="text-2xl font-bold">1500</p>
+                    <p className="text-2xl font-bold">{casesLoading ? "..." : pendingCases}</p>
                     <p className="text-sm text-gray-500">Pending Cases</p>
                   </div>
                 </div>
@@ -111,7 +127,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-4">
                   <div className="p-2 bg-emerald-200 rounded-full">🔴</div>
                   <div>
-                    <p className="text-2xl font-bold">5000</p>
+                    <p className="text-2xl font-bold">{casesLoading ? "..." : highPriorityCases}</p>
                     <p className="text-sm text-gray-500">High Priority</p>
                   </div>
                 </div>
@@ -123,7 +139,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-4">
                   <div className="p-2 bg-blue-200 rounded-full">🟡</div>
                   <div>
-                    <p className="text-2xl font-bold">5000</p>
+                    <p className="text-2xl font-bold">{casesLoading ? "..." : mediumPriorityCases}</p>
                     <p className="text-sm text-gray-500">Medium Priority</p>
                   </div>
                 </div>
@@ -135,7 +151,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center gap-4">
                   <div className="p-2 bg-pink-200 rounded-full">🟢</div>
                   <div>
-                    <p className="text-2xl font-bold">5000</p>
+                    <p className="text-2xl font-bold">{casesLoading ? "..." : lowPriorityCases}</p>
                     <p className="text-sm text-gray-500">Low Priority</p>
                   </div>
                 </div>
