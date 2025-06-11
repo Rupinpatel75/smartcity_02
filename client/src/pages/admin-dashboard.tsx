@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Shield, UserPlus, Users, FileText, MapPin, Calendar, User, Menu } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { createEmployeeSchema, type CreateEmployee } from "@shared/schema";
-import { AdminSidebar } from "@/components/admin-sidebar";
+import { AdminNavigation } from "@/components/admin-navigation";
 
 
 
@@ -131,8 +131,8 @@ export default function AdminDashboard() {
 
   return (
     <>
-      <AdminSidebar />
-      <div className="md:ml-72 p-3 sm:p-6 space-y-4 sm:space-y-6">
+      <AdminNavigation />
+      <div className="md:ml-64 p-3 sm:p-6 space-y-4 sm:space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
