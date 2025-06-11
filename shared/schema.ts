@@ -55,6 +55,15 @@ export const insertCaseSchema = createInsertSchema(cases).omit({
   resolvedAt: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().min(1, "Description is required"),
+  category: z.string().min(1, "Category is required"),
+  priority: z.string().min(1, "Priority is required"),
+  location: z.string().min(1, "Location is required"),
+  latitude: z.string().min(1, "Location coordinates are required"),
+  longitude: z.string().min(1, "Location coordinates are required"),
+  userId: z.number().min(1, "User ID is required"),
 });
 
 // Admin creates employee schema

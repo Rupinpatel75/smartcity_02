@@ -263,11 +263,29 @@ export default function Report() {
   });
 
   const onSubmit = (formData: any) => {
-    // Validate required fields on frontend
-    if (!formData.title || !formData.description || !formData.category || !formData.latitude || !formData.longitude) {
+    // Check each required field individually and show specific errors
+    const missingFields = [];
+    
+    if (!formData.title?.trim()) {
+      missingFields.push("Title");
+    }
+    if (!formData.description?.trim()) {
+      missingFields.push("Description");
+    }
+    if (!formData.category) {
+      missingFields.push("Category");
+    }
+    if (!formData.priority) {
+      missingFields.push("Priority");
+    }
+    if (!formData.latitude || !formData.longitude) {
+      missingFields.push("Location");
+    }
+
+    if (missingFields.length > 0) {
       toast({
         title: "Missing Required Fields",
-        description: "Please fill in all required fields: title, description, category, and location.",
+        description: `Please fill in: ${missingFields.join(", ")}`,
         variant: "destructive",
       });
       return;
@@ -287,15 +305,6 @@ export default function Report() {
     if (selectedFile) {
       data.append("image", selectedFile);
     }
-
-    // Debug log the form submission
-    console.log("Submitting form data with required fields:", {
-      title: formData.title,
-      description: formData.description,
-      category: formData.category,
-      latitude: formData.latitude,
-      longitude: formData.longitude
-    });
 
     mutation.mutate(data);
   };
