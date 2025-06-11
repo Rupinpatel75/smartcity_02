@@ -5,6 +5,7 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthLayout } from "@/components/layouts/auth-layout";
 import { AdminLayout } from "@/components/layouts/admin-layout-new";
+import { EmployeeLayout } from "@/components/layouts/employee-layout";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/context/AuthContext";
 import NotFound from "@/pages/not-found";
@@ -103,9 +104,21 @@ function Router() {
 
         {/* Employee routes */}
         <Route path="/employee/dashboard">
-          <AuthLayout>
+          <EmployeeLayout>
             <EmployeeDashboard />
-          </AuthLayout>
+          </EmployeeLayout>
+        </Route>
+        
+        <Route path="/employee/map">
+          <EmployeeLayout>
+            <AdminMap />
+          </EmployeeLayout>
+        </Route>
+        
+        <Route path="/employee/settings">
+          <EmployeeLayout>
+            <Settings />
+          </EmployeeLayout>
         </Route>
 
         <Route component={NotFound} />

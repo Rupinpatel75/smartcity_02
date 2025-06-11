@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Wrench, CheckCircle, Clock, MapPin, Calendar, FileText } from "lucide-react";
+import { Wrench, CheckCircle, Clock, MapPin, Calendar, FileText, Navigation, Eye, AlertTriangle } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 interface Case {
