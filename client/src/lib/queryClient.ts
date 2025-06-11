@@ -14,17 +14,21 @@ export async function apiRequest(
 ): Promise<Response> {
   const token = localStorage.getItem("token"); // Get token from localStorage
 
+  // Check if data is FormData - don't set Content-Type for FormData (browser will set it with boundary)
+  const isFormData = data instanceof FormData;
+  
   const headers: HeadersInit = {
-    ...(data ? { "Content-Type": "application/json" } : {}), // Add Content-Type if data exists
+    ...(!isFormData && data ? { "Content-Type": "application/json" } : {}), // Only add JSON Content-Type if not FormData
     ...(token ? { Authorization: `Bearer ${token}` } : {}), // Add Authorization header if token exists
   };
 
   console.log("API Request Headers:", headers); // Debugging step
+  console.log("Is FormData:", isFormData);
 
   const res = await fetch(url, {
     method,
     headers,
-    body: data ? JSON.stringify(data) : undefined,
+    body: isFormData ? data as FormData : (data ? JSON.stringify(data) : undefined),
     credentials: "include",
   });
 
