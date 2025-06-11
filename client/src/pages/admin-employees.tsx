@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, User, Eye, EyeOff, Users } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
-import { MobileAdminLayout } from "@/components/layouts/mobile-admin-layout";
+
 import { createEmployeeSchema, type CreateEmployee } from "@shared/schema";
 
 interface Employee {
@@ -74,9 +74,8 @@ export default function AdminEmployees() {
   };
 
   return (
-    <MobileAdminLayout>
-      <div className="space-y-4 sm:space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Employee Management</h1>
           <p className="text-gray-600">Manage your field team members</p>
@@ -367,7 +366,6 @@ export default function AdminEmployees() {
           </div>
         </CardContent>
       </Card>
-      </div>
-    </MobileAdminLayout>
+    </div>
   );
 }

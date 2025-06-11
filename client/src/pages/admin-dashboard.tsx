@@ -413,7 +413,6 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
-      </div>
-    </MobileAdminLayout>
+    </div>
   );
 }
