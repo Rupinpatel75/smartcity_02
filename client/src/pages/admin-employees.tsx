@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { UserPlus, User, Eye, EyeOff, Users } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
+
 import { createEmployeeSchema, type CreateEmployee } from "@shared/schema";
 
 interface Employee {
@@ -80,6 +81,7 @@ export default function AdminEmployees() {
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Employee Management</h1>
           <p className="text-sm sm:text-base text-gray-600">Manage your field team members</p>
         </div>
+        
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button>
