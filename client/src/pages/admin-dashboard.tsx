@@ -10,9 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, UserPlus, Users, FileText, MapPin, Calendar, User } from "lucide-react";
+import { Shield, UserPlus, Users, FileText, MapPin, Calendar, User, Menu } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { createEmployeeSchema, type CreateEmployee } from "@shared/schema";
+import { AdminSidebar } from "@/components/admin-sidebar";
 
 
 
@@ -129,8 +130,10 @@ export default function AdminDashboard() {
   const resolvedCases = cases.filter(c => c.status === "resolved");
 
   return (
-    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <>
+      <AdminSidebar />
+      <div className="md:ml-72 p-3 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
             <p className="text-sm sm:text-base text-gray-600">Manage employees and assign complaints</p>
@@ -143,7 +146,7 @@ export default function AdminDashboard() {
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <Card className="hover:shadow-md transition-shadow">
+        <Card className="hover:shadow-md transition-shadow">
             <CardContent className="p-3 sm:p-4">
               <div className="flex items-center space-x-2">
                 <Users className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 flex-shrink-0" />
@@ -189,7 +192,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
@@ -413,7 +416,8 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
