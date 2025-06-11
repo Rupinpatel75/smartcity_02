@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { useToast } from "@/hooks/use-toast";
 import { Wrench, CheckCircle, Clock, MapPin, Calendar, FileText, Navigation, Eye, AlertTriangle } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { MobileEmployeeLayout } from "@/components/layouts/mobile-employee-layout";
 
 interface Case {
   id: number;
@@ -78,7 +79,7 @@ export default function EmployeeDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/30 p-3 sm:p-6">
+    <MobileEmployeeLayout>
       <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
         {/* Mobile-first Header */}
         <div className="text-center sm:text-left">
@@ -331,7 +332,7 @@ export default function EmployeeDashboard() {
             )}
           </DialogContent>
         </Dialog>
-      </div>
-    </div>
+        </div>
+    </MobileEmployeeLayout>
   );
 }
