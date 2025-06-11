@@ -134,9 +134,9 @@ export default function AdminComplaints() {
   };
 
   return (
-    <>
-      <AdminNavigation />
-      <div className="md:ml-64 p-3 sm:p-6 space-y-4 sm:space-y-6">
+    <div className="relative">
+      <AdminNavButton />
+      <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Complaint Management</h1>
@@ -445,7 +445,6 @@ export default function AdminComplaints() {
           </div>
         </DialogContent>
       </Dialog>
-      </div>
-    </>
+    </div>
   );
 }

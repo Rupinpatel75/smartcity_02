@@ -1,22 +1,19 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, UserPlus, Users, FileText, MapPin, Calendar, User, Menu } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { UserPlus, Users, FileText, MapPin, User } from "lucide-react";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { AdminNavButton } from "@/components/admin-nav-button";
 import { createEmployeeSchema, type CreateEmployee } from "@shared/schema";
-import { AdminNavigation } from "@/components/admin-navigation";
-
-
 
 interface Employee {
   id: number;
@@ -40,11 +37,19 @@ interface Case {
 }
 
 export default function AdminDashboard() {
-  const [isCreateEmployeeOpen, setIsCreateEmployeeOpen] = useState(false);
-  const [isAssignCaseOpen, setIsAssignCaseOpen] = useState(false);
-  const [selectedCase, setSelectedCase] = useState<Case | null>(null);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [selectedCase, setSelectedCase] = useState<Case | null>(null);
+  const [assignedEmployee, setAssignedEmployee] = useState<string>("");
+
+  const form = useForm<CreateEmployee>({
+    resolver: zodResolver(createEmployeeSchema),
+    defaultValues: {
+      username: "",
+      email: "",
+      city: "",
+    },
+  });
 
   const { data: employees = [] } = useQuery<Employee[]>({
     queryKey: ["/api/v1/admin/employees"],
@@ -54,37 +59,24 @@ export default function AdminDashboard() {
     queryKey: ["/api/v1/cases"],
   });
 
-  const form = useForm<CreateEmployee>({
-    resolver: zodResolver(createEmployeeSchema),
-    defaultValues: {
-      username: "",
-      email: "",
-      password: "",
-      state: "",
-      district: "",
-      city: "",
-      phoneNo: "",
-    },
-  });
-
   const createEmployeeMutation = useMutation({
     mutationFn: async (data: CreateEmployee) => {
       const res = await apiRequest("POST", "/api/v1/admin/employees", data);
       return await res.json();
     },
     onSuccess: () => {
-      toast({
-        title: "Employee created successfully",
-        description: "The employee account has been created and is ready to use.",
-      });
-      form.reset();
-      setIsCreateEmployeeOpen(false);
       queryClient.invalidateQueries({ queryKey: ["/api/v1/admin/employees"] });
-    },
-    onError: (error: any) => {
       toast({
-        title: "Error creating employee",
-        description: error.message || "Failed to create employee account",
+        title: "Success",
+        description: "Employee created successfully",
+      });
+      setIsCreateDialogOpen(false);
+      form.reset();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
         variant: "destructive",
       });
     },
@@ -92,22 +84,24 @@ export default function AdminDashboard() {
 
   const assignCaseMutation = useMutation({
     mutationFn: async ({ caseId, employeeId }: { caseId: number; employeeId: number }) => {
-      const res = await apiRequest("PATCH", `/api/v1/admin/cases/${caseId}/assign`, { employeeId });
+      const res = await apiRequest("PATCH", `/api/v1/admin/cases/${caseId}/assign`, {
+        employeeId,
+      });
       return await res.json();
     },
     onSuccess: () => {
-      toast({
-        title: "Case assigned successfully",
-        description: "The case has been assigned to the selected employee.",
-      });
-      setIsAssignCaseOpen(false);
-      setSelectedCase(null);
       queryClient.invalidateQueries({ queryKey: ["/api/v1/cases"] });
-    },
-    onError: (error: any) => {
       toast({
-        title: "Error assigning case",
-        description: error.message || "Failed to assign case",
+        title: "Success",
+        description: "Case assigned successfully",
+      });
+      setSelectedCase(null);
+      setAssignedEmployee("");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
         variant: "destructive",
       });
     },
@@ -117,18 +111,19 @@ export default function AdminDashboard() {
     createEmployeeMutation.mutate(data);
   };
 
-  const onAssignCase = (employeeId: string) => {
-    if (selectedCase) {
+  const onAssignCase = () => {
+    if (selectedCase && assignedEmployee) {
       assignCaseMutation.mutate({
         caseId: selectedCase.id,
-        employeeId: parseInt(employeeId)
+        employeeId: parseInt(assignedEmployee),
       });
     }
   };
 
+  const totalEmployees = employees.length;
+  const activeEmployees = employees.filter(e => e.isActive).length;
+  const totalCases = cases.length;
   const pendingCases = cases.filter(c => c.status === "pending");
-  const assignedCases = cases.filter(c => c.assignedTo);
-  const resolvedCases = cases.filter(c => c.status === "resolved");
 
   return (
     <div className="relative">
@@ -148,67 +143,66 @@ export default function AdminDashboard() {
               <div className="flex items-center space-x-2">
                 <Users className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 flex-shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm font-medium text-gray-700 truncate">Total Employees</p>
-                  <p className="text-lg sm:text-2xl font-bold text-blue-600">{employees.length}</p>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total Employees</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">{totalEmployees}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          
+
+          <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center space-x-2">
+                <User className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Active Employees</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">{activeEmployees}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card className="hover:shadow-md transition-shadow">
             <CardContent className="p-3 sm:p-4">
               <div className="flex items-center space-x-2">
                 <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 flex-shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm font-medium text-gray-700 truncate">Pending Cases</p>
-                  <p className="text-lg sm:text-2xl font-bold text-orange-600">{pendingCases.length}</p>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total Cases</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">{totalCases}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          
-          <Card className="hover:shadow-md transition-shadow">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center space-x-2">
-                <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500 flex-shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm font-medium text-gray-700 truncate">Assigned Cases</p>
-                  <p className="text-lg sm:text-2xl font-bold text-purple-600">{assignedCases.length}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="hover:shadow-md transition-shadow">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center space-x-2">
-                <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs sm:text-sm font-medium text-gray-700 truncate">Resolved Cases</p>
-                  <p className="text-lg sm:text-2xl font-bold text-green-600">{resolvedCases.length}</p>
-                </div>
-              </div>
-            </CardContent>
-        </Card>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        {/* Employees Section */}
+          <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center space-x-2">
+                <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-red-500 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Pending Cases</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-900">{pendingCases.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
         <Card>
           <CardHeader>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <CardTitle className="text-lg sm:text-xl">Employees</CardTitle>
-                <CardDescription className="text-sm">Manage your city employees</CardDescription>
-              </div>
-              <Dialog open={isCreateEmployeeOpen} onOpenChange={setIsCreateEmployeeOpen}>
+            <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
+            <CardDescription className="text-sm">Manage your team and assignments</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="w-full sm:w-auto">
+                  <Button className="flex-1">
                     <UserPlus className="h-4 w-4 mr-2" />
                     Add Employee
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-w-2xl">
                   <DialogHeader>
                     <DialogTitle>Create New Employee</DialogTitle>
                     <DialogDescription>
@@ -225,7 +219,7 @@ export default function AdminDashboard() {
                             <FormItem>
                               <FormLabel>Username</FormLabel>
                               <FormControl>
-                                <Input placeholder="employee_username" {...field} />
+                                <Input placeholder="Enter username" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -238,7 +232,7 @@ export default function AdminDashboard() {
                             <FormItem>
                               <FormLabel>Email</FormLabel>
                               <FormControl>
-                                <Input placeholder="employee@example.com" {...field} />
+                                <Input type="email" placeholder="Enter email" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -247,167 +241,81 @@ export default function AdminDashboard() {
                       </div>
                       <FormField
                         control={form.control}
-                        name="password"
+                        name="city"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Password</FormLabel>
+                            <FormLabel>City</FormLabel>
                             <FormControl>
-                              <Input type="password" placeholder="Enter password" {...field} />
+                              <Input placeholder="Enter city" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      <div className="grid grid-cols-3 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="state"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>State</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Gujarat" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="district"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>District</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Ahmedabad" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="city"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>City</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Ahmedabad" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                      <div className="flex justify-end gap-3">
+                        <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button type="submit" disabled={createEmployeeMutation.isPending}>
+                          {createEmployeeMutation.isPending ? "Creating..." : "Create Employee"}
+                        </Button>
                       </div>
-                      <FormField
-                        control={form.control}
-                        name="phoneNo"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Phone Number</FormLabel>
-                            <FormControl>
-                              <Input placeholder="9876543210" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Button 
-                        type="submit" 
-                        className="w-full" 
-                        disabled={createEmployeeMutation.isPending}
-                      >
-                        {createEmployeeMutation.isPending ? "Creating..." : "Create Employee"}
-                      </Button>
                     </form>
                   </Form>
                 </DialogContent>
               </Dialog>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {employees.map((employee) => (
-                <div key={employee.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <User className="h-8 w-8 text-gray-400" />
-                    <div>
-                      <p className="font-medium">{employee.username}</p>
-                      <p className="text-sm text-gray-600">{employee.email}</p>
-                      <p className="text-xs text-gray-500">{employee.city}</p>
-                    </div>
-                  </div>
-                  <Badge variant={employee.isActive ? "default" : "secondary"}>
-                    {employee.isActive ? "Active" : "Inactive"}
-                  </Badge>
-                </div>
-              ))}
-              {employees.length === 0 && (
-                <p className="text-center text-gray-500 py-4">No employees yet. Create your first employee!</p>
-              )}
-            </div>
           </CardContent>
         </Card>
 
-        {/* Cases Section */}
+        {/* Case Assignment */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Cases</CardTitle>
-            <CardDescription>Manage and assign complaints</CardDescription>
+            <CardTitle className="text-base sm:text-lg">Assign Cases</CardTitle>
+            <CardDescription className="text-sm">Assign pending cases to available employees</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {pendingCases.slice(0, 5).map((case_) => (
-                <div key={case_.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex-1">
-                    <p className="font-medium">{case_.title}</p>
-                    <p className="text-sm text-gray-600 truncate">{case_.description}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="outline">{case_.category}</Badge>
-                      <Badge variant="destructive">{case_.status}</Badge>
-                      <Badge variant="secondary">{case_.priority}</Badge>
+            <div className="space-y-4">
+              {pendingCases.length > 0 ? (
+                pendingCases.slice(0, 5).map((case_: Case) => (
+                  <div key={case_.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 border rounded-lg">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-sm sm:text-base truncate">{case_.title}</h4>
+                      <p className="text-xs sm:text-sm text-gray-600 truncate">{case_.location}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="outline" className="text-xs">{case_.category}</Badge>
+                        <Badge variant="secondary" className="text-xs">{case_.priority}</Badge>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Select value={selectedCase?.id === case_.id ? assignedEmployee : ""} onValueChange={setAssignedEmployee}>
+                        <SelectTrigger className="w-40">
+                          <SelectValue placeholder="Select employee" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {employees.filter(e => e.isActive).map((employee) => (
+                            <SelectItem key={employee.id} value={employee.id.toString()}>
+                              {employee.username}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setSelectedCase(case_);
+                          if (assignedEmployee) {
+                            onAssignCase();
+                          }
+                        }}
+                        disabled={!assignedEmployee || assignCaseMutation.isPending}
+                      >
+                        Assign
+                      </Button>
                     </div>
                   </div>
-                  {!case_.assignedTo && (
-                    <Dialog open={isAssignCaseOpen && selectedCase?.id === case_.id} 
-                            onOpenChange={(open) => {
-                              setIsAssignCaseOpen(open);
-                              if (!open) setSelectedCase(null);
-                            }}>
-                      <DialogTrigger asChild>
-                        <Button 
-                          size="sm" 
-                          onClick={() => setSelectedCase(case_)}
-                          disabled={employees.length === 0}
-                        >
-                          Assign
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Assign Case</DialogTitle>
-                          <DialogDescription>
-                            Select an employee to handle this case: {case_.title}
-                          </DialogDescription>
-                        </DialogHeader>
-                        <Select onValueChange={onAssignCase}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select an employee" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {employees.map((employee) => (
-                              <SelectItem key={employee.id} value={employee.id.toString()}>
-                                {employee.username} - {employee.city}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </DialogContent>
-                    </Dialog>
-                  )}
-                </div>
-              ))}
-              {pendingCases.length === 0 && (
+                ))
+              ) : (
                 <p className="text-center text-gray-500 py-4">No pending cases to assign.</p>
               )}
             </div>
