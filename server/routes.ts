@@ -288,11 +288,28 @@ export async function registerRoutes(app: express.Express): Promise<Server> {
     try {
       const userId = req.user!.userId;
       
+      console.log("Form submission received:", {
+        body: req.body,
+        file: req.file ? { filename: req.file.filename, size: req.file.size } : null,
+        userId: userId
+      });
+      
       const { title, description, category, priority, location, latitude, longitude } = req.body;
 
-      // Validate required fields
-      if (!title || !description || !category || !latitude || !longitude) {
-        return res.status(400).json({ message: "All required fields must be provided." });
+      // Enhanced validation with detailed logging
+      const missingFields = [];
+      if (!title || title.trim() === '') missingFields.push('title');
+      if (!description || description.trim() === '') missingFields.push('description');
+      if (!category) missingFields.push('category');
+      if (!latitude) missingFields.push('latitude');
+      if (!longitude) missingFields.push('longitude');
+
+      if (missingFields.length > 0) {
+        console.log("Validation failed - missing fields:", missingFields);
+        return res.status(400).json({ 
+          message: `Missing required fields: ${missingFields.join(', ')}`,
+          missingFields 
+        });
       }
 
       let imageUrl = null;
@@ -300,22 +317,27 @@ export async function registerRoutes(app: express.Express): Promise<Server> {
         imageUrl = `/uploads/${req.file.filename}`;
       }
 
-      const newCase = await storage.createCase({
-        title,
-        description,
+      const caseData = {
+        title: title.trim(),
+        description: description.trim(),
         category,
         priority: priority || "medium",
-        location: location || "",
+        location: location || `${latitude}, ${longitude}`,
         latitude,
         longitude,
         imageUrl,
         userId,
-      });
+      };
 
+      console.log("Creating case with data:", caseData);
+
+      const newCase = await storage.createCase(caseData);
+
+      console.log("Case created successfully:", { id: newCase.id, title: newCase.title });
       res.status(201).json(newCase);
     } catch (error) {
       console.error("Create Case Error:", error);
-      res.status(500).json({ message: "Internal Server Error" });
+      res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
   });
 

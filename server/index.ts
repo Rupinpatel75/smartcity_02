@@ -9,16 +9,20 @@ app.use(express.json());
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 
-// Set correct MIME types for PWA files
-app.get('/sw.js', (req, res) => {
+// Serve static files with correct MIME types for PWA
+app.use('/sw.js', (req, res, next) => {
   res.setHeader('Content-Type', 'application/javascript');
-  res.sendFile(path.join(__dirname, '../public/sw.js'));
+  next();
 });
 
-app.get('/manifest.json', (req, res) => {
+app.use('/manifest.json', (req, res, next) => {
   res.setHeader('Content-Type', 'application/json');
-  res.sendFile(path.join(__dirname, '../public/manifest.json'));
+  next();
 });
+
+app.use(express.static('public'));
+
+
 
 // Logging middleware
 app.use((req, res, next) => {
