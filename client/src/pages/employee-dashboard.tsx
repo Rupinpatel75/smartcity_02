@@ -24,6 +24,9 @@ interface Case {
 }
 
 export default function EmployeeDashboard() {
+  const [selectedCase, setSelectedCase] = useState<Case | null>(null);
+  const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 

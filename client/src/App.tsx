@@ -24,7 +24,7 @@ import AdminDashboard from "@/pages/admin-dashboard";
 import AdminComplaints from "@/pages/admin-complaints";
 import AdminEmployees from "@/pages/admin-employees";
 import AdminMap from "@/pages/admin-map";
-import EmployeeDashboard from "@/pages/employee-dashboard";
+import EmployeeDashboard from "@/pages/employee-dashboard-new";
 
 function Router() {
   return (
