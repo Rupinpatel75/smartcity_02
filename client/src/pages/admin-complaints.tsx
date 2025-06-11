@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from "@/hooks/use-toast";
 import { FileText, MapPin, Calendar, User, Search, Filter, Eye } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
-import { MobileAdminLayout } from "@/components/layouts/mobile-admin-layout";
+
 
 interface Case {
   id: number;

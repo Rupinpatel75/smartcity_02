@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Shield, UserPlus, Users, FileText, MapPin, Calendar, User } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { createEmployeeSchema, type CreateEmployee } from "@shared/schema";
-import { MobileAdminLayout } from "@/components/layouts/mobile-admin-layout";
+
 
 interface Employee {
   id: number;
@@ -128,8 +128,7 @@ export default function AdminDashboard() {
   const resolvedCases = cases.filter(c => c.status === "resolved");
 
   return (
-    <MobileAdminLayout>
-      <div className="space-y-4 sm:space-y-6">
+    <div className="p-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Admin Dashboard</h1>

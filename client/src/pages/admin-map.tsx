@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Search, MapPin, User, Calendar, AlertTriangle, CheckCircle, Filter } from "lucide-react";
 import { DivIcon } from "leaflet";
+import { MobileAdminLayout } from "@/components/layouts/mobile-admin-layout";
 
 interface Case {
   id: number;
@@ -109,8 +110,9 @@ export default function AdminMap() {
   const assignedCount = cases.filter(c => c.assignedTo).length;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <MobileAdminLayout>
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold">City Map View</h1>
           <p className="text-gray-600">Visual overview of all complaints across the city</p>
@@ -343,6 +345,7 @@ export default function AdminMap() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </MobileAdminLayout>
   );
 }
