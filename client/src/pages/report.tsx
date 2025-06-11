@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertCaseSchema } from "@shared/schema";
+import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -70,7 +71,18 @@ export default function Report() {
   } | null>(null);
   const [position, setPosition] = useState<[number, number] | null>(null);
 
+  const reportFormSchema = z.object({
+    title: z.string().min(1, "Title is required"),
+    description: z.string().min(1, "Description is required"),
+    category: z.string().min(1, "Category is required"),
+    priority: z.string().min(1, "Priority is required"),
+    location: z.string().optional(),
+    latitude: z.string().min(1, "Location is required"),
+    longitude: z.string().min(1, "Location is required"),
+  });
+
   const form = useForm({
+    resolver: zodResolver(reportFormSchema),
     defaultValues: {
       title: "",
       description: "",
@@ -263,22 +275,34 @@ export default function Report() {
   });
 
   const onSubmit = (formData: any) => {
+    console.log("Form submitted with data:", formData);
+    console.log("Form state:", form.formState);
+    console.log("Form errors:", form.formState.errors);
+    console.log("Form values:", form.getValues());
+
+    // Get current form values directly from the form
+    const currentValues = form.getValues();
+    console.log("Current form values:", currentValues);
+
+    // Use current values if formData is empty
+    const dataToSubmit = Object.keys(formData).length > 0 ? formData : currentValues;
+    
     // Check each required field individually and show specific errors
     const missingFields = [];
     
-    if (!formData.title?.trim()) {
+    if (!dataToSubmit.title?.trim()) {
       missingFields.push("Title");
     }
-    if (!formData.description?.trim()) {
+    if (!dataToSubmit.description?.trim()) {
       missingFields.push("Description");
     }
-    if (!formData.category) {
+    if (!dataToSubmit.category) {
       missingFields.push("Category");
     }
-    if (!formData.priority) {
+    if (!dataToSubmit.priority) {
       missingFields.push("Priority");
     }
-    if (!formData.latitude || !formData.longitude) {
+    if (!dataToSubmit.latitude || !dataToSubmit.longitude) {
       missingFields.push("Location");
     }
 
@@ -291,19 +315,24 @@ export default function Report() {
       return;
     }
 
-    console.log("Form data being submitted:", formData);
+    console.log("Creating FormData with:", dataToSubmit);
 
     const data = new FormData();
-    data.append("title", formData.title.trim());
-    data.append("description", formData.description.trim());
-    data.append("category", formData.category);
-    data.append("priority", formData.priority || "medium");
-    data.append("latitude", formData.latitude);
-    data.append("longitude", formData.longitude);
-    data.append("location", formData.location || `${formData.latitude}, ${formData.longitude}`);
+    data.append("title", dataToSubmit.title.trim());
+    data.append("description", dataToSubmit.description.trim());
+    data.append("category", dataToSubmit.category);
+    data.append("priority", dataToSubmit.priority || "medium");
+    data.append("latitude", dataToSubmit.latitude);
+    data.append("longitude", dataToSubmit.longitude);
+    data.append("location", dataToSubmit.location || `${dataToSubmit.latitude}, ${dataToSubmit.longitude}`);
 
     if (selectedFile) {
       data.append("image", selectedFile);
+    }
+
+    // Log FormData contents
+    for (let [key, value] of data.entries()) {
+      console.log(`FormData ${key}:`, value);
     }
 
     mutation.mutate(data);
