@@ -23,9 +23,13 @@ export function EmployeeLayout({ children }: EmployeeLayoutProps) {
   const [location] = useLocation();
   
   const handleLogout = () => {
+    // Clear all authentication data
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    window.location.href = "/";
+    localStorage.clear(); // Clear any other stored data
+    
+    // Force redirect to home page
+    window.location.replace("/");
   };
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
