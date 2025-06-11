@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, User, Eye, EyeOff, Users } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { AdminNavButton } from "@/components/admin-nav-button";
 
 
 import { createEmployeeSchema, type CreateEmployee } from "@shared/schema";
@@ -75,27 +76,29 @@ export default function AdminEmployees() {
   };
 
   return (
-    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Employee Management</h1>
-          <p className="text-sm sm:text-base text-gray-600">Manage your field team members</p>
-        </div>
-        
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <UserPlus className="h-4 w-4 mr-2" />
-              Add New Employee
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Create New Employee</DialogTitle>
-              <DialogDescription>
-                Add a new employee to handle complaints in your city
-              </DialogDescription>
-            </DialogHeader>
+    <div className="relative">
+      <AdminNavButton />
+      <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">Employee Management</h1>
+            <p className="text-sm sm:text-base text-gray-600">Manage your field team members</p>
+          </div>
+          
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add New Employee
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Create New Employee</DialogTitle>
+                <DialogDescription>
+                  Add a new employee to handle complaints in your city
+                </DialogDescription>
+              </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onCreateEmployee)} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -368,6 +371,7 @@ export default function AdminEmployees() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
