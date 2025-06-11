@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from "@/hooks/use-toast";
 import { FileText, MapPin, Calendar, User, Search, Filter, Eye } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { MobileAdminLayout } from "@/components/layouts/mobile-admin-layout";
 
 interface Case {
   id: number;
@@ -130,7 +131,8 @@ export default function AdminComplaints() {
   };
 
   return (
-    <div className="space-y-6">
+    <MobileAdminLayout>
+      <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Complaint Management</h1>

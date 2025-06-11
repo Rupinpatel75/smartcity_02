@@ -4,8 +4,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthLayout } from "@/components/layouts/auth-layout";
-import { AdminLayout } from "@/components/layouts/admin-layout-new";
-import { EmployeeLayout } from "@/components/layouts/employee-layout";
+import { MobileAdminLayout } from "@/components/layouts/mobile-admin-layout";
+import { MobileEmployeeLayout } from "@/components/layouts/mobile-employee-layout";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/context/AuthContext";
 import NotFound from "@/pages/not-found";
@@ -72,54 +72,13 @@ function Router() {
         </Route>
 
         {/* Admin routes */}
-        <Route path="/admin/dashboard">
-          <AdminLayout>
-            <AdminDashboard />
-          </AdminLayout>
-        </Route>
-        
-        <Route path="/admin/complaints">
-          <AdminLayout>
-            <AdminComplaints />
-          </AdminLayout>
-        </Route>
-        
-        <Route path="/admin/employees">
-          <AdminLayout>
-            <AdminEmployees />
-          </AdminLayout>
-        </Route>
-        
-        <Route path="/admin/map">
-          <AdminLayout>
-            <AdminMap />
-          </AdminLayout>
-        </Route>
-        
-        <Route path="/admin/settings">
-          <AdminLayout>
-            <Settings />
-          </AdminLayout>
-        </Route>
+        <Route path="/admin/dashboard" component={AdminDashboard} />
+        <Route path="/admin/complaints" component={AdminComplaints} />
+        <Route path="/admin/employees" component={AdminEmployees} />
+        <Route path="/admin/map" component={AdminMap} />
 
         {/* Employee routes */}
-        <Route path="/employee/dashboard">
-          <EmployeeLayout>
-            <EmployeeDashboard />
-          </EmployeeLayout>
-        </Route>
-        
-        <Route path="/employee/map">
-          <EmployeeLayout>
-            <AdminMap />
-          </EmployeeLayout>
-        </Route>
-        
-        <Route path="/employee/settings">
-          <EmployeeLayout>
-            <Settings />
-          </EmployeeLayout>
-        </Route>
+        <Route path="/employee/dashboard" component={EmployeeDashboard} />
 
         <Route component={NotFound} />
       </Switch>
