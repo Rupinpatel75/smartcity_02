@@ -12,6 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, UserPlus, Users, FileText, MapPin, Calendar, User, Menu } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { AdminNavButton } from "@/components/admin-nav-button";
 import { createEmployeeSchema, type CreateEmployee } from "@shared/schema";
 import { AdminNavigation } from "@/components/admin-navigation";
 
@@ -130,23 +131,19 @@ export default function AdminDashboard() {
   const resolvedCases = cases.filter(c => c.status === "resolved");
 
   return (
-    <>
-      <AdminNavigation />
-      <div className="md:ml-64 p-3 sm:p-6 space-y-4 sm:space-y-6">
+    <div className="relative">
+      <AdminNavButton />
+      <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
             <p className="text-sm sm:text-base text-gray-600">Manage employees and assign complaints</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
-            <span className="text-sm sm:text-base font-medium">Administrator</span>
-          </div>
         </div>
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="hover:shadow-md transition-shadow">
+          <Card className="hover:shadow-md transition-shadow">
             <CardContent className="p-3 sm:p-4">
               <div className="flex items-center space-x-2">
                 <Users className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 flex-shrink-0" />
@@ -416,8 +413,7 @@ export default function AdminDashboard() {
             </div>
           </CardContent>
         </Card>
-        </div>
       </div>
-    </>
+    </div>
   );
 }

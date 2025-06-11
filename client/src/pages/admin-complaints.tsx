@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from "@/hooks/use-toast";
 import { FileText, MapPin, Calendar, User, Search, Filter, Eye } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
-import { AdminNavigation } from "@/components/admin-navigation";
+import { AdminNavButton } from "@/components/admin-nav-button";
 
 
 
