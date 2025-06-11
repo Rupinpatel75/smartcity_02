@@ -133,12 +133,12 @@ export default function AdminComplaints() {
   return (
     <MobileAdminLayout>
       <div className="space-y-4 sm:space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Complaint Management</h1>
-            <p className="text-sm sm:text-base text-gray-600">View, assign, and track city complaints</p>
-          </div>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Complaint Management</h1>
+          <p className="text-gray-600">View, assign, and track city complaints</p>
         </div>
+      </div>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -441,7 +441,6 @@ export default function AdminComplaints() {
           </div>
         </DialogContent>
       </Dialog>
-      </div>
-    </MobileAdminLayout>
+    </div>
   );
 }
