@@ -56,8 +56,11 @@ export function EmployeeLayout({ children }: EmployeeLayoutProps) {
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="bg-green-100 p-3 rounded-lg">
-              <User className="h-10 w-10 text-green-600" />
+            <div className="bg-gradient-to-br from-green-500 to-green-700 p-4 rounded-xl shadow-lg">
+              <div className="text-white font-bold text-lg leading-tight">
+                <div className="text-center">SMART</div>
+                <div className="text-center text-sm">CITY</div>
+              </div>
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Field Worker Portal</h1>
