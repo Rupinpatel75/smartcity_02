@@ -331,9 +331,7 @@ export default function Report() {
     }
 
     // Log FormData contents
-    for (let [key, value] of data.entries()) {
-      console.log(`FormData ${key}:`, value);
-    }
+    console.log("FormData created successfully with", data.has('title') ? 'title' : 'no title');
 
     mutation.mutate(data);
   };

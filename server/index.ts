@@ -21,6 +21,7 @@ app.use('/manifest.json', (req, res, next) => {
 });
 
 app.use(express.static('public'));
+app.use('/uploads', express.static('uploads'));
 
 
 

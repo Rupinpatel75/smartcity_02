@@ -4,11 +4,30 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import multer from "multer";
 import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
 import { storage } from "./storage";
 import { insertUserSchema, insertCaseSchema, createEmployeeSchema, adminLoginSchema, citizenLoginSchema } from "@shared/schema";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
-const upload = multer({ dest: "uploads/" });
+
+// Get __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, "../uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Configure multer for file uploads
+const upload = multer({ 
+  dest: uploadsDir,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  }
+});
 
 interface AuthRequest extends Request {
   user?: { userId: number };
@@ -283,15 +302,25 @@ export async function registerRoutes(app: express.Express): Promise<Server> {
     }
   });
 
-  // Submit case/complaint
-  app.post("/api/v1/cases", authenticateUser, upload.single("image"), async (req: AuthRequest, res: Response) => {
+  // Submit case/complaint - using multer for multipart/form-data
+  app.post("/api/v1/cases", authenticateUser, (req: AuthRequest, res: Response, next: NextFunction) => {
+    // Use multer middleware
+    upload.single("image")(req, res, (err) => {
+      if (err) {
+        console.error("Multer error:", err);
+        return res.status(400).json({ message: "File upload error", error: String(err) });
+      }
+      next();
+    });
+  }, async (req: AuthRequest, res: Response) => {
     try {
       const userId = req.user!.userId;
       
       console.log("Form submission received:", {
         body: req.body,
         file: req.file ? { filename: req.file.filename, size: req.file.size } : null,
-        userId: userId
+        userId: userId,
+        contentType: req.headers['content-type']
       });
       
       const { title, description, category, priority, location, latitude, longitude } = req.body;
@@ -306,9 +335,12 @@ export async function registerRoutes(app: express.Express): Promise<Server> {
 
       if (missingFields.length > 0) {
         console.log("Validation failed - missing fields:", missingFields);
+        console.log("Received body keys:", Object.keys(req.body));
+        console.log("Body values:", req.body);
         return res.status(400).json({ 
           message: `Missing required fields: ${missingFields.join(', ')}`,
-          missingFields 
+          missingFields,
+          receivedFields: Object.keys(req.body)
         });
       }
 
@@ -337,7 +369,7 @@ export async function registerRoutes(app: express.Express): Promise<Server> {
       res.status(201).json(newCase);
     } catch (error) {
       console.error("Create Case Error:", error);
-      res.status(500).json({ message: "Internal Server Error", error: error.message });
+      res.status(500).json({ message: "Internal Server Error", error: String(error) });
     }
   });
 
