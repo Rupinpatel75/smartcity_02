@@ -141,52 +141,55 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Users className="h-5 w-5 text-blue-500" />
-              <div>
-                <p className="text-sm font-medium">Total Employees</p>
-                <p className="text-2xl font-bold text-blue-600">{employees.length}</p>
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center space-x-2">
+                <Users className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-700 truncate">Total Employees</p>
+                  <p className="text-lg sm:text-2xl font-bold text-blue-600">{employees.length}</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <FileText className="h-5 w-5 text-orange-500" />
-              <div>
-                <p className="text-sm font-medium">Pending Cases</p>
-                <p className="text-2xl font-bold text-orange-600">{pendingCases.length}</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center space-x-2">
+                <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-700 truncate">Pending Cases</p>
+                  <p className="text-lg sm:text-2xl font-bold text-orange-600">{pendingCases.length}</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <MapPin className="h-5 w-5 text-purple-500" />
-              <div>
-                <p className="text-sm font-medium">Assigned Cases</p>
-                <p className="text-2xl font-bold text-purple-600">{assignedCases.length}</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center space-x-2">
+                <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-700 truncate">Assigned Cases</p>
+                  <p className="text-lg sm:text-2xl font-bold text-purple-600">{assignedCases.length}</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Calendar className="h-5 w-5 text-green-500" />
-              <div>
-                <p className="text-sm font-medium">Resolved Cases</p>
-                <p className="text-2xl font-bold text-green-600">{resolvedCases.length}</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center space-x-2">
+                <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-700 truncate">Resolved Cases</p>
+                  <p className="text-lg sm:text-2xl font-bold text-green-600">{resolvedCases.length}</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
