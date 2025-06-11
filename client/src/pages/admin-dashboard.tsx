@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Shield, UserPlus, Users, FileText, MapPin, Calendar, User } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { createEmployeeSchema, type CreateEmployee } from "@shared/schema";
+import { AdminLayout } from "@/components/layouts/admin-layout";
 
 
 interface Employee {
@@ -128,20 +129,21 @@ export default function AdminDashboard() {
   const resolvedCases = cases.filter(c => c.status === "resolved");
 
   return (
-    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-sm sm:text-base text-gray-600">Manage employees and assign complaints</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
-          <span className="text-sm sm:text-base font-medium">Administrator</span>
-        </div>
-      </div>
+    <AdminLayout>
+      <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+              <p className="text-sm sm:text-base text-gray-600">Manage employees and assign complaints</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+              <span className="text-sm sm:text-base font-medium">Administrator</span>
+            </div>
+          </div>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <Card className="hover:shadow-md transition-shadow">
             <CardContent className="p-3 sm:p-4">
               <div className="flex items-center space-x-2">
@@ -413,6 +415,7 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
-    </div>
+      </div>
+    </AdminLayout>
   );
 }
