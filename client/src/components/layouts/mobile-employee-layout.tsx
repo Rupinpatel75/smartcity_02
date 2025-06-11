@@ -15,7 +15,7 @@ import {
   CheckCircle
 } from "lucide-react";
 import { useLocation } from "wouter";
-import logoPath from "@assets/logo_1749612230002.png";
+// Using text logo for consistency
 
 interface MobileEmployeeLayoutProps {
   children: React.ReactNode;
@@ -63,7 +63,9 @@ export function MobileEmployeeLayout({ children }: MobileEmployeeLayoutProps) {
                   <div className="p-4 border-b border-gray-200">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <img src={logoPath} alt="SmartCity" className="h-8 w-8" />
+                        <div className="h-8 w-8 bg-orange-600 rounded-lg flex items-center justify-center">
+                          <span className="text-white font-bold text-sm">SC</span>
+                        </div>
                         <div>
                           <h2 className="text-sm font-semibold text-gray-900">Field Worker</h2>
                           <p className="text-xs text-gray-600">SmartCity Employee</p>
@@ -143,7 +145,9 @@ export function MobileEmployeeLayout({ children }: MobileEmployeeLayoutProps) {
               </SheetContent>
             </Sheet>
 
-            <img src={logoPath} alt="SmartCity" className="h-6 w-6" />
+            <div className="h-6 w-6 bg-orange-600 rounded-md flex items-center justify-center">
+              <span className="text-white font-bold text-xs">SC</span>
+            </div>
             <div>
               <h1 className="text-sm font-semibold text-gray-900">Field Worker</h1>
               <p className="text-xs text-gray-600">SmartCity Employee</p>
@@ -174,7 +178,9 @@ export function MobileEmployeeLayout({ children }: MobileEmployeeLayoutProps) {
           {/* Desktop Sidebar Header */}
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center gap-3">
-              <img src={logoPath} alt="SmartCity" className="h-10 w-10" />
+              <div className="h-10 w-10 bg-orange-600 rounded-xl flex items-center justify-center">
+                <span className="text-white font-bold text-lg">SC</span>
+              </div>
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">Field Worker</h2>
                 <p className="text-sm text-gray-600">SmartCity Employee Portal</p>

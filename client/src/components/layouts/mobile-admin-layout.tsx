@@ -14,7 +14,6 @@ import {
   X
 } from "lucide-react";
 import { useLocation } from "wouter";
-// Using text logo for now to avoid asset import issues
 
 interface MobileAdminLayoutProps {
   children: React.ReactNode;
@@ -47,9 +46,8 @@ export function MobileAdminLayout({ children }: MobileAdminLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Mobile Header */}
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-200 px-4 py-3">
+      <header className="sticky top-0 z-50 bg-white border-b border-gray-200 px-4 py-3 lg:hidden">
         <div className="flex items-center justify-between">
-          {/* Logo and Menu */}
           <div className="flex items-center gap-3">
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
@@ -59,28 +57,23 @@ export function MobileAdminLayout({ children }: MobileAdminLayoutProps) {
               </SheetTrigger>
               <SheetContent side="left" className="w-72 p-0">
                 <div className="flex flex-col h-full">
-                  {/* Sidebar Header */}
                   <div className="p-4 border-b border-gray-200">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <img src={logoPath} alt="SmartCity" className="h-8 w-8" />
+                        <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                          <span className="text-white font-bold text-sm">SC</span>
+                        </div>
                         <div>
                           <h2 className="text-sm font-semibold text-gray-900">SmartCity Admin</h2>
                           <p className="text-xs text-gray-600">{user.city}</p>
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setIsOpen(false)}
-                        className="p-1"
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)} className="p-1">
                         <X className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
-
-                  {/* Navigation */}
+                  
                   <nav className="flex-1 p-4 space-y-2">
                     {navigation.map((item) => {
                       const isActive = location === item.href;
@@ -101,7 +94,6 @@ export function MobileAdminLayout({ children }: MobileAdminLayoutProps) {
                     })}
                   </nav>
 
-                  {/* User Info & Logout */}
                   <div className="p-4 border-t border-gray-200 space-y-3">
                     <div className="text-center">
                       <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
@@ -111,15 +103,9 @@ export function MobileAdminLayout({ children }: MobileAdminLayoutProps) {
                       </div>
                       <p className="text-sm font-medium text-gray-900">{user.username}</p>
                       <p className="text-xs text-gray-600">{user.email}</p>
-                      <Badge variant="secondary" className="mt-1 text-xs">
-                        Admin
-                      </Badge>
+                      <Badge variant="secondary" className="mt-1 text-xs">Admin</Badge>
                     </div>
-                    <Button
-                      variant="outline"
-                      onClick={handleLogout}
-                      className="w-full text-sm"
-                    >
+                    <Button variant="outline" onClick={handleLogout} className="w-full text-sm">
                       <LogOut className="h-4 w-4 mr-2" />
                       Logout
                     </Button>
@@ -128,14 +114,15 @@ export function MobileAdminLayout({ children }: MobileAdminLayoutProps) {
               </SheetContent>
             </Sheet>
 
-            <img src={logoPath} alt="SmartCity" className="h-6 w-6" />
+            <div className="h-6 w-6 bg-blue-600 rounded-md flex items-center justify-center">
+              <span className="text-white font-bold text-xs">SC</span>
+            </div>
             <div>
               <h1 className="text-sm font-semibold text-gray-900">Admin Panel</h1>
               <p className="text-xs text-gray-600">{user.city} City</p>
             </div>
           </div>
 
-          {/* Header Actions */}
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" className="p-2 relative">
               <Bell className="h-4 w-4" />
@@ -148,18 +135,14 @@ export function MobileAdminLayout({ children }: MobileAdminLayoutProps) {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="p-4 pb-20">
-        {children}
-      </main>
-
-      {/* Desktop Sidebar (hidden on mobile) */}
+      {/* Desktop Sidebar */}
       <div className="hidden lg:block fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 z-40">
         <div className="flex flex-col h-full">
-          {/* Desktop Sidebar Header */}
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center gap-3">
-              <img src={logoPath} alt="SmartCity" className="h-10 w-10" />
+              <div className="h-10 w-10 bg-blue-600 rounded-xl flex items-center justify-center">
+                <span className="text-white font-bold text-lg">SC</span>
+              </div>
               <div>
                 <h2 className="text-lg font-semibold text-gray-900">SmartCity Admin</h2>
                 <p className="text-sm text-gray-600">{user.city} City Management</p>
@@ -167,7 +150,6 @@ export function MobileAdminLayout({ children }: MobileAdminLayoutProps) {
             </div>
           </div>
 
-          {/* Desktop Navigation */}
           <nav className="flex-1 p-6 space-y-2">
             {navigation.map((item) => {
               const isActive = location === item.href;
@@ -188,7 +170,6 @@ export function MobileAdminLayout({ children }: MobileAdminLayoutProps) {
             })}
           </nav>
 
-          {/* Desktop User Info */}
           <div className="p-6 border-t border-gray-200">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -201,11 +182,7 @@ export function MobileAdminLayout({ children }: MobileAdminLayoutProps) {
                 <p className="text-xs text-gray-600 truncate">{user.email}</p>
               </div>
             </div>
-            <Button
-              variant="outline"
-              onClick={handleLogout}
-              className="w-full"
-            >
+            <Button variant="outline" onClick={handleLogout} className="w-full">
               <LogOut className="h-4 w-4 mr-2" />
               Logout
             </Button>
@@ -213,12 +190,10 @@ export function MobileAdminLayout({ children }: MobileAdminLayoutProps) {
         </div>
       </div>
 
-      {/* Desktop content offset */}
-      <div className="hidden lg:block lg:ml-64">
-        <main className="p-8">
-          {children}
-        </main>
-      </div>
+      {/* Main Content */}
+      <main className="lg:ml-64 p-4 lg:p-8">
+        {children}
+      </main>
     </div>
   );
 }
