@@ -20,7 +20,7 @@ import Cases from "@/pages/cases";
 import Settings from "@/pages/settings";
 import AdminLogin from "@/pages/admin-login";
 import EmployeeLogin from "@/pages/employee-login";
-import AdminDashboard from "@/pages/admin-dashboard";
+import AdminDashboard from "@/pages/admin-dashboard-mobile";
 import AdminComplaints from "@/pages/admin-complaints";
 import AdminEmployees from "@/pages/admin-employees";
 import AdminMap from "@/pages/admin-map";
