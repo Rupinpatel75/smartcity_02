@@ -13,6 +13,7 @@ import {
   Clock,
   AlertTriangle
 } from "lucide-react";
+import smartCityLogo from "../../assets/smartcity-logo.png";
 
 interface EmployeeLayoutProps {
   children: ReactNode;
@@ -56,11 +57,12 @@ export function EmployeeLayout({ children }: EmployeeLayoutProps) {
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="bg-gradient-to-br from-green-500 to-green-700 p-4 rounded-xl shadow-lg">
-              <div className="text-white font-bold text-lg leading-tight">
-                <div className="text-center">SMART</div>
-                <div className="text-center text-sm">CITY</div>
-              </div>
+            <div className="bg-white p-2 rounded-lg shadow-sm border">
+              <img 
+                src={smartCityLogo} 
+                alt="SmartCity Logo" 
+                className="h-16 w-16 object-contain"
+              />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Field Worker Portal</h1>
