@@ -50,13 +50,12 @@ export default function EmployeeDashboard() {
     onError: (error: any) => {
       toast({
         title: "Error updating status",
-        description: error.message || "Failed to update case status",
+        description: error.message,
         variant: "destructive",
       });
     },
   });
 
-  // Get current user and filter assigned cases
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const assignedCases = cases.filter(case_ => case_.assignedTo === user.id);
 
@@ -79,158 +78,128 @@ export default function EmployeeDashboard() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">My Work Assignments</h1>
-          <p className="text-gray-600">Cases assigned to me for field resolution</p>
+    <div className="min-h-screen bg-gray-50/30 p-3 sm:p-6">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+        {/* Mobile-first Header */}
+        <div className="text-center sm:text-left">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">My Work Assignments</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">Cases assigned to me for field resolution</p>
         </div>
-      </div>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <FileText className="h-5 w-5 text-blue-500" />
-              <div>
-                <p className="text-sm font-medium">Total Assigned</p>
-                <p className="text-2xl font-bold text-blue-600">{assignedCases.length}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <AlertTriangle className="h-5 w-5 text-red-500" />
-              <div>
-                <p className="text-sm font-medium">Pending</p>
-                <p className="text-2xl font-bold text-red-600">
-                  {assignedCases.filter(c => c.status === "pending").length}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Clock className="h-5 w-5 text-orange-500" />
-              <div>
-                <p className="text-sm font-medium">In Progress</p>
-                <p className="text-2xl font-bold text-orange-600">
-                  {assignedCases.filter(c => c.status === "in-progress").length}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-              <div>
-                <p className="text-sm font-medium">Completed</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {assignedCases.filter(c => c.status === "resolved").length}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Priority Tasks Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-500" />
-            High Priority Tasks
-          </CardTitle>
-          <CardDescription>Urgent assignments that need immediate attention</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {assignedCases.filter(c => c.priority === "high" && c.status !== "resolved").length > 0 ? (
-            <div className="space-y-3">
-              {assignedCases.filter(c => c.priority === "high" && c.status !== "resolved").map((case_) => (
-                <div key={case_.id} className="p-3 border border-red-200 rounded-lg bg-red-50">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-semibold text-red-900">{case_.title}</h4>
-                      <p className="text-sm text-red-700">{case_.location}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="border-red-300"
-                        onClick={() => window.open(`https://maps.google.com/maps?q=${case_.latitude},${case_.longitude}`, '_blank')}
-                      >
-                        <Navigation className="h-4 w-4 mr-1" />
-                        Navigate
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        className="bg-red-600 hover:bg-red-700"
-                        onClick={() => {
-                          setSelectedCase(case_);
-                          setIsStatusDialogOpen(true);
-                        }}
-                      >
-                        Start Work
-                      </Button>
-                    </div>
-                  </div>
+        {/* Mobile-optimized Statistics Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center space-x-2">
+                <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-700 truncate">Total Assigned</p>
+                  <p className="text-lg sm:text-2xl font-bold text-blue-600">{assignedCases.length}</p>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-4">No high priority tasks at the moment</p>
-          )}
-        </CardContent>
-      </Card>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center space-x-2">
+                <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-red-500 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-700 truncate">Pending</p>
+                  <p className="text-lg sm:text-2xl font-bold text-red-600">
+                    {assignedCases.filter(c => c.status === "pending").length}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center space-x-2">
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-700 truncate">In Progress</p>
+                  <p className="text-lg sm:text-2xl font-bold text-orange-600">
+                    {assignedCases.filter(c => c.status === "in-progress").length}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-700 truncate">Completed</p>
+                  <p className="text-lg sm:text-2xl font-bold text-green-600">
+                    {assignedCases.filter(c => c.status === "resolved").length}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* All Assigned Cases */}
-      <Card>
-        <CardHeader>
-          <CardTitle>All My Assignments</CardTitle>
-          <CardDescription>Complete list of cases assigned to me</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {assignedCases.length > 0 ? (
-            <div className="space-y-4">
+        {/* Mobile-optimized Cases List */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Assigned Cases</h2>
+            <Badge variant="outline" className="text-xs sm:text-sm">
+              {assignedCases.length} Total
+            </Badge>
+          </div>
+
+          {assignedCases.length === 0 ? (
+            <Card>
+              <CardContent className="p-6 sm:p-8 text-center">
+                <Wrench className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Cases Assigned</h3>
+                <p className="text-gray-600">You don't have any cases assigned to you yet.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4">
               {assignedCases.map((case_) => (
-                <div key={case_.id} className="p-4 border rounded-lg hover:bg-gray-50">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-semibold text-lg">{case_.title}</h3>
-                        <Badge variant={getStatusColor(case_.status)}>
-                          {case_.status}
-                        </Badge>
-                        <Badge variant={getPriorityColor(case_.priority)}>
-                          {case_.priority} priority
-                        </Badge>
-                        <Badge variant="outline">{case_.category}</Badge>
-                      </div>
-                      
-                      <p className="text-gray-600 mb-3 line-clamp-2">{case_.description}</p>
-                      
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-4 w-4" />
-                          <span>{case_.location}</span>
+                <Card key={case_.id} className="hover:shadow-md transition-all duration-200">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="space-y-4">
+                      {/* Header Section */}
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
+                            {case_.title}
+                          </h3>
+                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                            {case_.description}
+                          </p>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>Assigned: {new Date(case_.createdAt).toLocaleDateString()}</span>
+                        <div className="flex flex-wrap gap-2 sm:flex-col sm:items-end">
+                          <Badge variant={getStatusColor(case_.status)} className="text-xs">
+                            {case_.status.charAt(0).toUpperCase() + case_.status.slice(1)}
+                          </Badge>
+                          <Badge variant={getPriorityColor(case_.priority)} className="text-xs">
+                            {case_.priority.charAt(0).toUpperCase() + case_.priority.slice(1)}
+                          </Badge>
                         </div>
                       </div>
-                    </div>
-                    
-                    <div className="flex flex-col gap-2 ml-4">
-                      <div className="flex gap-2">
+
+                      {/* Details Section */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <MapPin className="h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{case_.location}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <Calendar className="h-4 w-4 flex-shrink-0" />
+                          <span>{new Date(case_.createdAt).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+
+                      {/* Actions Section */}
+                      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2 border-t">
                         <Button
                           variant="outline"
                           size="sm"
@@ -238,161 +207,131 @@ export default function EmployeeDashboard() {
                             setSelectedCase(case_);
                             setIsViewDialogOpen(true);
                           }}
+                          className="flex-1 sm:flex-none"
                         >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
+                          <Eye className="h-4 w-4 mr-2" />
+                          View Details
                         </Button>
-                        
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => window.open(`https://maps.google.com/maps?q=${case_.latitude},${case_.longitude}`, '_blank')}
+                          onClick={() => {
+                            const url = `https://www.google.com/maps?q=${case_.latitude},${case_.longitude}`;
+                            window.open(url, '_blank');
+                          }}
+                          className="flex-1 sm:flex-none"
                         >
-                          <Navigation className="h-4 w-4 mr-1" />
+                          <Navigation className="h-4 w-4 mr-2" />
                           Navigate
                         </Button>
+                        {case_.status !== "resolved" && (
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setSelectedCase(case_);
+                              setIsStatusDialogOpen(true);
+                            }}
+                            className="flex-1 sm:flex-none"
+                          >
+                            <Wrench className="h-4 w-4 mr-2" />
+                            Update Status
+                          </Button>
+                        )}
                       </div>
-                      
-                      {case_.status !== "resolved" && (
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            setSelectedCase(case_);
-                            setIsStatusDialogOpen(true);
-                          }}
-                        >
-                          Update Status
-                        </Button>
-                      )}
                     </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
-          ) : (
-            <div className="text-center py-12">
-              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No assignments yet</h3>
-              <p className="text-gray-500">You don't have any cases assigned to you at the moment.</p>
-              <p className="text-gray-500">Check back later or contact your administrator.</p>
-            </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* View Case Details Dialog */}
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Assignment Details</DialogTitle>
-            <DialogDescription>
-              Complete information about this field assignment
-            </DialogDescription>
-          </DialogHeader>
-          {selectedCase && (
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-semibold text-lg mb-2">{selectedCase.title}</h3>
-                <div className="flex gap-2 mb-4">
-                  <Badge variant={getStatusColor(selectedCase.status)}>
-                    {selectedCase.status}
-                  </Badge>
-                  <Badge variant={getPriorityColor(selectedCase.priority)}>
-                    {selectedCase.priority} priority
-                  </Badge>
-                  <Badge variant="outline">{selectedCase.category}</Badge>
-                </div>
-              </div>
-              
-              <div>
-                <h4 className="font-medium mb-2">Description</h4>
-                <p className="text-gray-600">{selectedCase.description}</p>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
+        {/* View Details Dialog */}
+        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+          <DialogContent className="max-w-lg mx-4 sm:mx-auto">
+            <DialogHeader>
+              <DialogTitle className="text-lg sm:text-xl">Case Details</DialogTitle>
+              <DialogDescription className="text-sm">
+                Detailed information about the selected case
+              </DialogDescription>
+            </DialogHeader>
+            {selectedCase && (
+              <div className="space-y-4 max-h-96 overflow-y-auto">
                 <div>
-                  <h4 className="font-medium mb-2">Location</h4>
-                  <p className="text-gray-600 mb-2">{selectedCase.location}</p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.open(`https://maps.google.com/maps?q=${selectedCase.latitude},${selectedCase.longitude}`, '_blank')}
-                  >
-                    <Navigation className="h-4 w-4 mr-1" />
-                    Open in Maps
-                  </Button>
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">Title</h4>
+                  <p className="text-sm text-gray-600">{selectedCase.title}</p>
                 </div>
-                
                 <div>
-                  <h4 className="font-medium mb-2">Assignment Info</h4>
-                  <p className="text-sm text-gray-600">
-                    Assigned: {new Date(selectedCase.createdAt).toLocaleString()}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Priority: {selectedCase.priority}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Category: {selectedCase.category}
-                  </p>
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">Description</h4>
+                  <p className="text-sm text-gray-600">{selectedCase.description}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900 mb-2">Category</h4>
+                    <p className="text-sm text-gray-600">{selectedCase.category}</p>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-900 mb-2">Priority</h4>
+                    <Badge variant={getPriorityColor(selectedCase.priority)} className="text-xs">
+                      {selectedCase.priority.charAt(0).toUpperCase() + selectedCase.priority.slice(1)}
+                    </Badge>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">Location</h4>
+                  <p className="text-sm text-gray-600">{selectedCase.location}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">Status</h4>
+                  <Badge variant={getStatusColor(selectedCase.status)} className="text-xs">
+                    {selectedCase.status.charAt(0).toUpperCase() + selectedCase.status.slice(1)}
+                  </Badge>
                 </div>
               </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+            )}
+          </DialogContent>
+        </Dialog>
 
-      {/* Update Status Dialog */}
-      <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Update Work Status</DialogTitle>
-            <DialogDescription>
-              Update the progress of: {selectedCase?.title}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-medium mb-3">Select New Status</h4>
-              <div className="space-y-2">
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-orange-700 border-orange-200 hover:bg-orange-50"
-                  onClick={() => {
-                    if (selectedCase) {
-                      updateStatusMutation.mutate({
-                        caseId: selectedCase.id,
-                        status: "in-progress"
-                      });
-                    }
-                  }}
-                  disabled={updateStatusMutation.isPending}
-                >
-                  <Clock className="h-4 w-4 mr-2" />
-                  Mark as In Progress
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-green-700 border-green-200 hover:bg-green-50"
-                  onClick={() => {
-                    if (selectedCase) {
-                      updateStatusMutation.mutate({
-                        caseId: selectedCase.id,
-                        status: "resolved"
-                      });
-                    }
-                  }}
-                  disabled={updateStatusMutation.isPending}
-                >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Mark as Resolved
-                </Button>
+        {/* Status Update Dialog */}
+        <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
+          <DialogContent className="max-w-sm mx-4 sm:mx-auto">
+            <DialogHeader>
+              <DialogTitle className="text-lg">Update Case Status</DialogTitle>
+              <DialogDescription className="text-sm">
+                Change the status of the selected case
+              </DialogDescription>
+            </DialogHeader>
+            {selectedCase && (
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-sm font-medium mb-2">Case: {selectedCase.title}</h4>
+                  <p className="text-xs text-gray-600">Current status: {selectedCase.status}</p>
+                </div>
+                <div className="flex flex-col gap-2">
+                  {selectedCase.status === "pending" && (
+                    <Button
+                      onClick={() => updateStatusMutation.mutate({ caseId: selectedCase.id, status: "in-progress" })}
+                      disabled={updateStatusMutation.isPending}
+                      className="w-full"
+                    >
+                      Mark as In Progress
+                    </Button>
+                  )}
+                  {selectedCase.status === "in-progress" && (
+                    <Button
+                      onClick={() => updateStatusMutation.mutate({ caseId: selectedCase.id, status: "resolved" })}
+                      disabled={updateStatusMutation.isPending}
+                      className="w-full"
+                    >
+                      Mark as Resolved
+                    </Button>
+                  )}
+                </div>
               </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 }
