@@ -69,12 +69,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="bg-blue-100 p-2 rounded-lg">
-              <Shield className="h-6 w-6 text-blue-600" />
+            <div className="bg-blue-100 p-3 rounded-lg">
+              <Shield className="h-10 w-10 text-blue-600" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">Admin Portal</h1>
-              <p className="text-sm text-gray-600">{user.city} City Management</p>
+              <h1 className="text-2xl font-bold text-gray-900">Admin Portal</h1>
+              <p className="text-base text-gray-600">{user.city} City Management</p>
             </div>
           </div>
           
