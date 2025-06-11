@@ -128,17 +128,17 @@ export default function AdminDashboard() {
   const resolvedCases = cases.filter(c => c.status === "resolved");
 
   return (
-    <div className="p-6 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-            <p className="text-sm sm:text-base text-gray-600">Manage employees and assign complaints</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
-            <span className="text-sm sm:text-base font-medium">Administrator</span>
-          </div>
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+          <p className="text-sm sm:text-base text-gray-600">Manage employees and assign complaints</p>
         </div>
+        <div className="flex items-center gap-2">
+          <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+          <span className="text-sm sm:text-base font-medium">Administrator</span>
+        </div>
+      </div>
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -191,18 +191,18 @@ export default function AdminDashboard() {
           </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Employees Section */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <CardTitle>Employees</CardTitle>
-                <CardDescription>Manage your city employees</CardDescription>
+                <CardTitle className="text-lg sm:text-xl">Employees</CardTitle>
+                <CardDescription className="text-sm">Manage your city employees</CardDescription>
               </div>
               <Dialog open={isCreateEmployeeOpen} onOpenChange={setIsCreateEmployeeOpen}>
                 <DialogTrigger asChild>
-                  <Button>
+                  <Button className="w-full sm:w-auto">
                     <UserPlus className="h-4 w-4 mr-2" />
                     Add Employee
                   </Button>
