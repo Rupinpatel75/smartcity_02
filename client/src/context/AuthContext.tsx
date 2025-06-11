@@ -64,8 +64,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.clear();
       delete axios.defaults.headers.common['Authorization'];
       setUser(null);
+      // Redirect to home page
+      window.location.replace("/");
     } catch (error) {
       console.error("Error logging out:", error);
     }
