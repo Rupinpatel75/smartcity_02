@@ -74,6 +74,27 @@ export default function AdminComplaints() {
     },
   });
 
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ caseId, status }: { caseId: number; status: string }) => {
+      const res = await apiRequest("PATCH", `/api/v1/cases/${caseId}/status`, { status });
+      return await res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Status updated successfully",
+        description: "The case status has been updated.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/v1/cases"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error updating status",
+        description: error.message || "Failed to update case status",
+        variant: "destructive",
+      });
+    },
+  });
+
   const filteredCases = cases.filter(case_ => {
     const matchesSearch = !searchTerm || 
       case_.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -276,6 +297,25 @@ export default function AdminComplaints() {
                         Assign
                       </Button>
                     )}
+                    
+                    <Select
+                      value={case_.status}
+                      onValueChange={(newStatus) => {
+                        updateStatusMutation.mutate({
+                          caseId: case_.id,
+                          status: newStatus
+                        });
+                      }}
+                    >
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="in-progress">In Progress</SelectItem>
+                        <SelectItem value="resolved">Resolved</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>
