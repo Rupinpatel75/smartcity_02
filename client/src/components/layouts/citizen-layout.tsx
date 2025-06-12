@@ -4,20 +4,21 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
-  Users,
-  FileText,
-  MapPin,
+  Briefcase,
+  Award,
   Settings,
   LogOut,
   Menu,
   X,
+  MapPin,
+  FileText,
 } from "lucide-react";
 
-interface AdminLayoutProps {
+interface CitizenLayoutProps {
   children: ReactNode;
 }
 
-export function AdminLayout({ children }: AdminLayoutProps) {
+export function CitizenLayout({ children }: CitizenLayoutProps) {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -31,27 +32,32 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const navItems = [
     {
       title: "Dashboard",
-      href: "/admin/dashboard",
+      href: "/dashboard",
       icon: LayoutDashboard,
     },
     {
-      title: "Manage Complaints",
-      href: "/admin/complaints",
+      title: "Report Issue",
+      href: "/report",
       icon: FileText,
     },
     {
-      title: "Employees",
-      href: "/admin/employees",
-      icon: Users,
+      title: "My Cases",
+      href: "/cases",
+      icon: Briefcase,
     },
     {
-      title: "City Map",
-      href: "/admin/map",
+      title: "Map View",
+      href: "/map",
       icon: MapPin,
     },
     {
+      title: "Rewards",
+      href: "/rewards",
+      icon: Award,
+    },
+    {
       title: "Settings",
-      href: "/admin/settings",
+      href: "/settings",
       icon: Settings,
     },
   ];
@@ -70,7 +76,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             >
               {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
-            <h1 className="text-lg font-bold text-blue-600">Admin Portal</h1>
+            <h1 className="text-lg font-bold">SmartCity</h1>
           </div>
         </div>
       </header>
@@ -92,7 +98,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <div className="flex flex-col h-full">
             {/* Logo section - only visible on desktop */}
             <div className="hidden lg:flex items-center p-6 border-b">
-              <h1 className="text-xl font-bold text-blue-600">Admin Portal</h1>
+              <h1 className="text-xl font-bold text-green-600">SmartCity</h1>
             </div>
             
             <div className="flex-1 py-4">
@@ -108,12 +114,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                       className={cn(
                         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all",
                         isActive
-                          ? "bg-blue-100 text-blue-700 font-medium"
+                          ? "bg-green-100 text-green-700 font-medium"
                           : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                       )}
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      <IconComponent className={cn("h-5 w-5", isActive ? "text-blue-700" : "")} />
+                      <IconComponent className={cn("h-5 w-5", isActive ? "text-green-700" : "")} />
                       <span>{item.title}</span>
                     </Link>
                   );
