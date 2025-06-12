@@ -13,6 +13,7 @@ import {
   MapPin,
   FileText,
 } from "lucide-react";
+import smartCityLogo from "../../assets/smartcity-logo.png";
 
 interface CitizenLayoutProps {
   children: ReactNode;
@@ -76,7 +77,16 @@ export function CitizenLayout({ children }: CitizenLayoutProps) {
             >
               {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
-            <h1 className="text-lg font-bold">SmartCity</h1>
+            <div className="flex items-center space-x-2">
+              <div className="bg-green-100 p-1 rounded-lg">
+                <img 
+                  src={smartCityLogo} 
+                  alt="SmartCity Logo" 
+                  className="h-6 w-6 object-contain"
+                />
+              </div>
+              <h1 className="text-lg font-bold text-green-600">SmartCity</h1>
+            </div>
           </div>
         </div>
       </header>
@@ -98,7 +108,16 @@ export function CitizenLayout({ children }: CitizenLayoutProps) {
           <div className="flex flex-col h-full">
             {/* Logo section - only visible on desktop */}
             <div className="hidden lg:flex items-center p-6 border-b">
-              <h1 className="text-xl font-bold text-green-600">SmartCity</h1>
+              <div className="flex items-center space-x-3">
+                <div className="bg-green-100 p-2 rounded-lg">
+                  <img 
+                    src={smartCityLogo} 
+                    alt="SmartCity Logo" 
+                    className="h-8 w-8 object-contain"
+                  />
+                </div>
+                <h1 className="text-xl font-bold text-green-600">SmartCity</h1>
+              </div>
             </div>
             
             <div className="flex-1 py-4">
