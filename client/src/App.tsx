@@ -3,7 +3,7 @@ import { Switch, Route } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
-import { AuthLayout } from "@/components/layouts/auth-layout";
+import { CitizenLayout } from "@/components/layouts/citizen-layout";
 import { AdminLayout } from "@/components/layouts/admin-layout-new";
 import { EmployeeLayout } from "@/components/layouts/employee-layout";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -41,34 +41,34 @@ function Router() {
         
         {/* Citizen routes */}
         <Route path="/dashboard">
-          <AuthLayout>
+          <CitizenLayout>
             <Dashboard />
-          </AuthLayout>
+          </CitizenLayout>
         </Route>
         <Route path="/map">
-          <AuthLayout>
+          <CitizenLayout>
             <Map />
-          </AuthLayout>
+          </CitizenLayout>
         </Route>
         <Route path="/report">
-          <AuthLayout>
+          <CitizenLayout>
             <Report />
-          </AuthLayout>
+          </CitizenLayout>
         </Route>
         <Route path="/rewards">
-          <AuthLayout>
+          <CitizenLayout>
             <Rewards />
-          </AuthLayout>
+          </CitizenLayout>
         </Route>
         <Route path="/cases">
-          <AuthLayout>
+          <CitizenLayout>
             <Cases />
-          </AuthLayout>
+          </CitizenLayout>
         </Route>
         <Route path="/settings">
-          <AuthLayout>
+          <CitizenLayout>
             <Settings />
-          </AuthLayout>
+          </CitizenLayout>
         </Route>
 
         {/* Admin routes */}
