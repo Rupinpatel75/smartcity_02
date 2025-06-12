@@ -8,6 +8,8 @@ import { AdminLayout } from "@/components/layouts/admin-layout-new";
 import { EmployeeLayout } from "@/components/layouts/employee-layout";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/context/AuthContext";
+import { InstallPrompt } from "@/components/pwa/install-prompt";
+import { OfflineIndicator } from "@/components/pwa/offline-indicator";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Login from "@/pages/login";
@@ -134,6 +136,8 @@ function App() {
         <QueryClientProvider client={queryClient}>
           <Router />
           <Toaster />
+          <InstallPrompt />
+          <OfflineIndicator />
         </QueryClientProvider>
       </SidebarProvider>
     </AuthProvider>
