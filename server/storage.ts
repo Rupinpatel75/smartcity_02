@@ -75,14 +75,34 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getCasesByAdmin(adminId: number): Promise<Case[]> {
-    // Get cases in admin's city
+    // Get cases from admin's city only
     const admin = await this.getUser(adminId);
     if (!admin) return [];
     
-    const results = await db.select().from(cases)
-      .innerJoin(users, eq(cases.userId, users.id))
-      .where(eq(users.city, admin.city));
-    return results.map(r => r.cases);
+    const results = await db.select({
+      id: cases.id,
+      title: cases.title,
+      description: cases.description,
+      category: cases.category,
+      status: cases.status,
+      priority: cases.priority,
+      location: cases.location,
+      latitude: cases.latitude,
+      longitude: cases.longitude,
+      imageUrl: cases.imageUrl,
+      userId: cases.userId,
+      assignedTo: cases.assignedTo,
+      assignedBy: cases.assignedBy,
+      assignedAt: cases.assignedAt,
+      resolvedAt: cases.resolvedAt,
+      createdAt: cases.createdAt,
+      updatedAt: cases.updatedAt
+    })
+    .from(cases)
+    .innerJoin(users, eq(cases.userId, users.id))
+    .where(eq(users.city, admin.city));
+    
+    return results;
   }
 
   async getCasesByEmployee(employeeId: number): Promise<Case[]> {
