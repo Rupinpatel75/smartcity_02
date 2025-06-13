@@ -153,24 +153,6 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(cases).where(eq(cases.userId, userId));
   }
 
-  async getCasesByAdmin(adminId: number): Promise<Case[]> {
-    // Admin sees cases assigned by them or in their city
-    const admin = await this.getUser(adminId);
-    if (!admin) return [];
-    
-    return await db.select().from(cases).where(
-      or(
-        eq(cases.assignedBy, adminId),
-        // For now, return all cases - can be filtered by city later
-        sql`1=1`
-      )
-    );
-  }
-
-  async getCasesByEmployee(employeeId: number): Promise<Case[]> {
-    return await db.select().from(cases).where(eq(cases.assignedTo, employeeId));
-  }
-
   async getCaseById(id: number): Promise<Case | undefined> {
     const [case_] = await db.select().from(cases).where(eq(cases.id, id));
     return case_ || undefined;
