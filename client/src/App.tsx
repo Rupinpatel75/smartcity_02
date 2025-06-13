@@ -10,6 +10,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AuthProvider } from "@/context/AuthContext";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { OfflineIndicator } from "@/components/pwa/offline-indicator";
+import { PWAMeta } from "@/components/pwa/pwa-meta";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Login from "@/pages/login";
@@ -134,6 +135,7 @@ function App() {
     <AuthProvider>
       <SidebarProvider>
         <QueryClientProvider client={queryClient}>
+          <PWAMeta />
           <Router />
           <Toaster />
           <InstallPrompt />

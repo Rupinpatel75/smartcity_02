@@ -1,6 +1,7 @@
-const CACHE_NAME = 'smartcity-v2';
-const STATIC_CACHE = 'smartcity-static-v2';
-const DYNAMIC_CACHE = 'smartcity-dynamic-v2';
+const CACHE_NAME = 'smartcity-v3';
+const STATIC_CACHE = 'smartcity-static-v3';
+const DYNAMIC_CACHE = 'smartcity-dynamic-v3';
+const OFFLINE_PAGE = '/offline';
 
 const urlsToCache = [
   '/',
@@ -13,16 +14,31 @@ const urlsToCache = [
   '/cases',
   '/map',
   '/rewards',
-  '/settings'
+  '/settings',
+  '/admin/login',
+  '/employee/login',
+  '/signup'
+];
+
+// Essential resources for offline functionality
+const ESSENTIAL_RESOURCES = [
+  '/',
+  '/manifest.json',
+  '/smartcity-icon-192.png',
+  '/smartcity-icon-512.png'
 ];
 
 // Install Service Worker
 self.addEventListener('install', function(event) {
   event.waitUntil(
-    caches.open(STATIC_CACHE)
-      .then(function(cache) {
-        return cache.addAll(urlsToCache);
+    Promise.all([
+      caches.open(STATIC_CACHE).then(cache => {
+        return cache.addAll(ESSENTIAL_RESOURCES);
+      }),
+      caches.open(DYNAMIC_CACHE).then(cache => {
+        return cache.addAll(urlsToCache.filter(url => !ESSENTIAL_RESOURCES.includes(url)));
       })
+    ])
   );
   self.skipWaiting();
 });
@@ -43,19 +59,27 @@ self.addEventListener('activate', function(event) {
   self.clients.claim();
 });
 
-// Fetch Strategy: Network First for API, Cache First for Static
+// Enhanced Fetch Strategy for PWA compliance
 self.addEventListener('fetch', function(event) {
   const { request } = event;
   const url = new URL(request.url);
+
+  // Skip cross-origin requests
+  if (request.url.startsWith('http') && !request.url.startsWith(self.location.origin)) {
+    return;
+  }
 
   // API requests - Network First with Cache Fallback
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(request)
         .then(response => {
-          const responseClone = response.clone();
-          caches.open(DYNAMIC_CACHE)
-            .then(cache => cache.put(request, responseClone));
+          // Only cache successful responses
+          if (response.status === 200) {
+            const responseClone = response.clone();
+            caches.open(DYNAMIC_CACHE)
+              .then(cache => cache.put(request, responseClone));
+          }
           return response;
         })
         .catch(() => {
@@ -64,10 +88,18 @@ self.addEventListener('fetch', function(event) {
               if (response) {
                 return response;
               }
-              // Return offline page for API failures
+              // Return meaningful offline response
               return new Response(
-                JSON.stringify({ error: 'Offline - Please try again when connected' }),
-                { headers: { 'Content-Type': 'application/json' } }
+                JSON.stringify({ 
+                  error: 'Offline mode - Data may be outdated',
+                  offline: true,
+                  timestamp: Date.now()
+                }),
+                { 
+                  headers: { 'Content-Type': 'application/json' },
+                  status: 503,
+                  statusText: 'Service Unavailable'
+                }
               );
             });
         })
@@ -75,25 +107,62 @@ self.addEventListener('fetch', function(event) {
     return;
   }
 
-  // Static assets - Cache First
+  // Static assets and navigation - Cache First with Network Fallback
   event.respondWith(
     caches.match(request)
       .then(function(response) {
         if (response) {
+          // Serve from cache and update in background
+          fetch(request)
+            .then(fetchResponse => {
+              if (fetchResponse.status === 200) {
+                caches.open(DYNAMIC_CACHE)
+                  .then(cache => cache.put(request, fetchResponse));
+              }
+            })
+            .catch(() => {});
           return response;
         }
+
+        // Not in cache, try network
         return fetch(request)
           .then(response => {
-            const responseClone = response.clone();
-            caches.open(DYNAMIC_CACHE)
-              .then(cache => cache.put(request, responseClone));
+            // Cache successful responses
+            if (response.status === 200) {
+              const responseClone = response.clone();
+              caches.open(DYNAMIC_CACHE)
+                .then(cache => cache.put(request, responseClone));
+            }
             return response;
           })
           .catch(() => {
-            // Return offline page for navigation requests
+            // Offline fallback for navigation requests
             if (request.mode === 'navigate') {
-              return caches.match('/');
+              return caches.match('/').then(response => {
+                return response || new Response(
+                  `<!DOCTYPE html>
+                  <html>
+                    <head>
+                      <title>SmartCity - Offline</title>
+                      <meta name="viewport" content="width=device-width, initial-scale=1">
+                      <style>
+                        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+                        .offline { color: #666; }
+                      </style>
+                    </head>
+                    <body>
+                      <h1>SmartCity</h1>
+                      <div class="offline">
+                        <h2>You're offline</h2>
+                        <p>Please check your internet connection and try again.</p>
+                      </div>
+                    </body>
+                  </html>`,
+                  { headers: { 'Content-Type': 'text/html' } }
+                );
+              });
             }
+            throw error;
           });
       })
   );
