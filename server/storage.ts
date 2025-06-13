@@ -1,6 +1,6 @@
 import { users, cases, type User, type InsertUser, type InsertCase, type Case } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, or, sql } from "drizzle-orm";
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -16,6 +16,7 @@ export interface IStorage {
   getCases(): Promise<Case[]>;
   getCasesByAdmin(adminId: number): Promise<Case[]>;
   getCasesByEmployee(employeeId: number): Promise<Case[]>;
+  getCasesByUser(userId: number): Promise<Case[]>;
   getCaseById(id: number): Promise<Case | undefined>;
   assignCase(caseId: number, employeeId: number, adminId: number): Promise<Case | undefined>;
   updateCaseStatus(caseId: number, status: string, userId: number): Promise<Case | undefined>;
@@ -146,6 +147,28 @@ export class DatabaseStorage implements IStorage {
 
   async getCases(): Promise<Case[]> {
     return await db.select().from(cases);
+  }
+
+  async getCasesByUser(userId: number): Promise<Case[]> {
+    return await db.select().from(cases).where(eq(cases.userId, userId));
+  }
+
+  async getCasesByAdmin(adminId: number): Promise<Case[]> {
+    // Admin sees cases assigned by them or in their city
+    const admin = await this.getUser(adminId);
+    if (!admin) return [];
+    
+    return await db.select().from(cases).where(
+      or(
+        eq(cases.assignedBy, adminId),
+        // For now, return all cases - can be filtered by city later
+        sql`1=1`
+      )
+    );
+  }
+
+  async getCasesByEmployee(employeeId: number): Promise<Case[]> {
+    return await db.select().from(cases).where(eq(cases.assignedTo, employeeId));
   }
 
   async getCaseById(id: number): Promise<Case | undefined> {

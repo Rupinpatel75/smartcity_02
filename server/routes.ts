@@ -386,6 +386,9 @@ export async function registerRoutes(app: express.Express): Promise<Server> {
         cases = await storage.getCasesByAdmin(user.id);
       } else if (user.role === "employee") {
         cases = await storage.getCasesByEmployee(user.id);
+      } else if (user.role === "citizen") {
+        // Citizens see only their own cases
+        cases = await storage.getCasesByUser(user.id);
       } else {
         cases = await storage.getCases();
       }
