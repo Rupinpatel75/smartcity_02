@@ -6,24 +6,37 @@ import path from "path";
 
 const app = express();
 
-// Security headers for PWA
+// Security and PWA headers
 app.use((req, res, next) => {
-  // Force HTTPS in production
-  if (process.env.NODE_ENV === 'production' && req.header('x-forwarded-proto') !== 'https') {
-    res.redirect(`https://${req.header('host')}${req.url}`);
-    return;
+  // Force HTTPS in production (handles various proxy scenarios)
+  if (process.env.NODE_ENV === 'production') {
+    const forwardedProto = req.header('x-forwarded-proto') || req.header('x-forwarded-protocol');
+    const cloudflareVisitorScheme = req.header('cf-visitor');
+    
+    if (forwardedProto !== 'https' && 
+        (!cloudflareVisitorScheme || !cloudflareVisitorScheme.includes('https')) &&
+        req.header('host') !== 'localhost') {
+      return res.redirect(301, `https://${req.header('host')}${req.url}`);
+    }
   }
   
-  // Security headers
+  // Security headers for PWA compliance
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
   
-  // PWA specific headers
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('Expires', '0');
+  // PWA caching headers for static assets
+  if (req.url.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/)) {
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  } else if (req.url === '/manifest.json' || req.url === '/sw.js') {
+    res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+  } else {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
   
   next();
 });
