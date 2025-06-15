@@ -102,7 +102,22 @@ The deployment uses Replit's autoscale feature and includes proper environment v
 
 ```
 Changelog:
-- June 15, 2025. Initial setup
+- June 15, 2025: Initial setup with multi-city admin system
+- June 15, 2025: Enhanced map functionality with real-time complaint updates
+  - Added automatic refresh every 30 seconds for new complaints
+  - Implemented manual refresh button for instant updates
+  - Created priority-based red marker system (darker = higher priority)
+  - Added pulse animation for pending complaints
+  - Green markers for resolved complaints with checkmark
+  - Uses public /api/cases/map endpoint for unrestricted map access
+- June 15, 2025: Comprehensive user profile management system
+  - City change functionality for all user roles
+  - Password update with current password verification
+  - Account information display and editing
+- June 15, 2025: PWA validation and compliance system
+  - Added browserconfig.xml for Windows tile integration
+  - Enhanced manifest.json with proper icons and settings
+  - Complete offline functionality with service worker
 ```
 
 ## User Preferences
