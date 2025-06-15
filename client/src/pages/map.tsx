@@ -136,6 +136,15 @@ export default function Map() {
         <CheckCircle className="mr-2 h-4 w-4" />
         Resolved ({(cases as CaseData[]).filter(c => c.status === "resolved").length})
       </Button>
+      <Button 
+        variant="outline" 
+        onClick={handleRefresh}
+        disabled={isRefetching}
+        className="w-full md:w-auto"
+      >
+        <RefreshCw className={`mr-2 h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`} /> 
+        {isRefetching ? 'Refreshing...' : 'Refresh'}
+      </Button>
     </div>
   );
 
@@ -149,13 +158,24 @@ export default function Map() {
       </div>
 
       <div className="block md:hidden mb-4">
-        <Button 
-          variant="outline" 
-          className="w-full"
-          onClick={() => setIsFilterOpen(!isFilterOpen)}
-        >
-          <Search className="mr-2 h-4 w-4" /> Filter Reports
-        </Button>
+        <div className="flex gap-2 mb-2">
+          <Button 
+            variant="outline" 
+            className="flex-1"
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+          >
+            <Search className="mr-2 h-4 w-4" /> Filter
+          </Button>
+          <Button 
+            variant="outline" 
+            className="flex-1"
+            onClick={handleRefresh}
+            disabled={isRefetching}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`} /> 
+            {isRefetching ? 'Loading...' : 'Refresh'}
+          </Button>
+        </div>
         {isFilterOpen && (
           <Card className="mt-4">
             <CardContent className="p-4">
