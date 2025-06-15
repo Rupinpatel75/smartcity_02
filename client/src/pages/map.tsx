@@ -7,16 +7,32 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { Calendar as CalendarIcon, Search, MapPin, Clock, User, AlertTriangle, CheckCircle } from "lucide-react";
+import { Calendar as CalendarIcon, Search, MapPin, Clock, User, AlertTriangle, CheckCircle, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
 import { Icon, DivIcon } from "leaflet";
 import { renderToStaticMarkup } from 'react-dom/server';
 
 // Create custom markers for different statuses
-const createMarkerIcon = (status: string) => {
-  const color = status === 'resolved' || status === 'completed' ? '#22c55e' : '#ef4444';
-  const symbol = status === 'resolved' || status === 'completed' ? '✓' : '!';
+const createMarkerIcon = (status: string, priority: string = 'medium') => {
+  // Color based on status: pending = red, in-progress = yellow, resolved = green
+  let color = '#ef4444'; // Default red for pending
+  let symbol = '!';
+  
+  if (status === 'resolved' || status === 'completed') {
+    color = '#22c55e'; // Green for resolved
+    symbol = '✓';
+  } else if (status === 'in-progress') {
+    color = '#f59e0b'; // Yellow for in-progress
+    symbol = '⚠';
+  } else {
+    // Red for pending - show different intensity based on priority
+    if (priority === 'high') {
+      color = '#dc2626'; // Darker red for high priority
+    } else if (priority === 'low') {
+      color = '#f87171'; // Lighter red for low priority
+    }
+  }
   
   const iconHtml = `
     <div style="
@@ -28,6 +44,7 @@ const createMarkerIcon = (status: string) => {
       border: 3px solid white;
       box-shadow: 0 2px 4px rgba(0,0,0,0.3);
       position: relative;
+      animation: ${status === 'pending' ? 'pulse 2s infinite' : 'none'};
     ">
       <div style="
         position: absolute;
@@ -72,9 +89,14 @@ export default function Map() {
   const [selectedStatus, setSelectedStatus] = useState<"pending" | "resolved" | undefined>();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const { data: cases = [] } = useQuery({
-    queryKey: ["/api/v1/cases"],
+  const { data: cases = [], refetch, isRefetching } = useQuery({
+    queryKey: ["/api/cases/map"],
+    refetchInterval: 30000, // Refresh every 30 seconds for new complaints
   });
+
+  const handleRefresh = () => {
+    refetch();
+  };
 
   // Filter cases based on search term and status
   const filteredCases = (cases as CaseData[]).filter((case_: CaseData) => {
@@ -196,7 +218,7 @@ export default function Map() {
                 <Marker
                   key={case_.id}
                   position={[parseFloat(case_.latitude), parseFloat(case_.longitude)]}
-                  icon={createMarkerIcon(case_.status)}
+                  icon={createMarkerIcon(case_.status, case_.priority)}
                 >
                   <Popup maxWidth={300} minWidth={250}>
                     <div className="p-3 space-y-3">
