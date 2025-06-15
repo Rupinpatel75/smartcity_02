@@ -323,21 +323,50 @@ export default function Settings() {
         <CardHeader>
           <CardTitle>Account Information</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2">
-          <div className="flex justify-between">
-            <span className="text-sm text-gray-600">Account Type:</span>
-            <span className="text-sm font-medium">
-              {authUser?.role === 'admin' ? 'Administrator' : 'Citizen'}
-            </span>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Account Type:</span>
+                <span className="text-sm font-medium capitalize">
+                  {userProfile?.role === 'admin' ? 'Administrator' : 
+                   userProfile?.role === 'employee' ? 'Employee' : 'Citizen'}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Current City:</span>
+                <span className="text-sm font-medium capitalize">{userProfile?.city || 'Not set'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">State:</span>
+                <span className="text-sm font-medium">Gujarat</span>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Points Balance:</span>
+                <span className="text-sm font-medium">{userProfile?.points || 0} points</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Mobile Number:</span>
+                <span className="text-sm font-medium">{userProfile?.phoneNo || 'Not provided'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-600">Email:</span>
+                <span className="text-sm font-medium text-xs">{userProfile?.email || 'Not provided'}</span>
+              </div>
+            </div>
           </div>
-          <div className="flex justify-between">
-            <span className="text-sm text-gray-600">Points Balance:</span>
-            <span className="text-sm font-medium">{authUser?.points || 0} points</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-sm text-gray-600">State:</span>
-            <span className="text-sm font-medium">Gujarat</span>
-          </div>
+          
+          {userProfile?.role === 'citizen' && (
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <h4 className="text-sm font-medium text-blue-800 mb-1">City Administration</h4>
+              <p className="text-xs text-blue-600">
+                Your complaints are managed by {userProfile?.city ? `${userProfile.city.charAt(0).toUpperCase() + userProfile.city.slice(1)} City Administration` : 'your city administration'}. 
+                You can change your city above if you've moved.
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

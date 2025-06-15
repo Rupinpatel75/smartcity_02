@@ -458,13 +458,108 @@ export async function registerRoutes(app: express.Express): Promise<Server> {
         id: user.id,
         username: user.username,
         email: user.email,
+        phoneNo: user.phoneNo,
         role: user.role,
         city: user.city,
+        state: user.state,
+        district: user.district,
         points: user.points || 0
       });
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
+
+  // Update user profile
+  app.post("/api/v1/user/update", authenticateUser, async (req: AuthRequest, res: Response) => {
+    try {
+      const { username, email, phoneNo, city } = req.body;
+      const userId = req.user!.userId;
+
+      // Validate input
+      if (!username || !email || !city) {
+        return res.status(400).json({ message: "Username, email, and city are required" });
+      }
+
+      // Check if email is already taken by another user
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser && existingUser.id !== userId) {
+        return res.status(400).json({ message: "Email is already taken" });
+      }
+
+      // Check if phone number is already taken by another user (if provided)
+      if (phoneNo) {
+        const existingPhoneUser = await storage.getUserByMobile(phoneNo);
+        if (existingPhoneUser && existingPhoneUser.id !== userId) {
+          return res.status(400).json({ message: "Phone number is already taken" });
+        }
+      }
+
+      const updatedUser = await storage.updateUser(userId, {
+        username,
+        email,
+        phoneNo,
+        city,
+        district: city, // Update district to match city
+      });
+
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({
+        message: "Profile updated successfully",
+        user: {
+          id: updatedUser.id,
+          username: updatedUser.username,
+          email: updatedUser.email,
+          phoneNo: updatedUser.phoneNo,
+          city: updatedUser.city,
+          role: updatedUser.role
+        }
+      });
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  });
+
+  // Change user password
+  app.post("/api/v1/user/change-password", authenticateUser, async (req: AuthRequest, res: Response) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      const userId = req.user!.userId;
+
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: "Current password and new password are required" });
+      }
+
+      if (newPassword.length < 8) {
+        return res.status(400).json({ message: "New password must be at least 8 characters long" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Verify current password
+      const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+      if (!isValidPassword) {
+        return res.status(400).json({ message: "Current password is incorrect" });
+      }
+
+      // Hash new password
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update password
+      await storage.updateUser(userId, { password: hashedNewPassword });
+
+      res.json({ message: "Password changed successfully" });
+    } catch (error) {
+      console.error("Error changing password:", error);
+      res.status(500).json({ message: "Internal Server Error" });
     }
   });
 
